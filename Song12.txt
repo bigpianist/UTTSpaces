@@ -1,0 +1,52 @@
+| Dm  | Fm | Am | Am . F Am |
+| Dm  | Fm | Am | Am . . C |
+| C7   | Ebm  | Gm |  Eb Gm |
+| C7   | Ebm  | Gm |  Gm . Eb Gm7 |
+| Gm | Bm | Eb | G . Eb Eb |
+| Gm | Bm | Eb | Eb . Eb F |
+| Eb | F#m | Bb | Bb . Dm F |
+| Eb | F#m | Bb | Bb . Dm F  |
+| C#m | Em |  Fm | D . D# C |
+| C#m | Em | C | C . C C |
+| Em | F#m | Dm | Dm | Em | Em A7 Em7 |
+|F#m | F#m | Ebm | F#m . Dm F |
+| Bb | B . . . Em . | Bb | Eb | Em | F#m | Dm | Fm | Db | G . G G |
+| Ebm | Fm | C |
+| A# | Em  | G#m | G#m E G |
+| C#m | Em | G#m | G . . . G G |
+| C7 | Am | Gm | Eb |
+| C7 | Am | Gm | Eb |
+| Em | C | Gm | Eb |
+| C | Am | Gm | Eb |
+| C | Am | Gm | Eb |
+| Em | C | Gm | Eb |
+| Eb | A | Bb | Bb Dm |
+| Fb | A | Bb | Bb|
+| Em | F#m | Dm | Gm | 
+| Eb | F#m | Dm | Gm |
+| Dm | Fm | Am | Am . F Am |
+| Dm | Fm | Am | Am . A Am |
+|G|
+|  F | F | Dm | C | F |
+| F Dm | C F|
+| F | F | Db | F | Dm | C# | F |
+| F | Dm | C | D . C# | F |
+| F | Bb | C# | F | 
+| F Dm | C F |
+| F | D | A | F | F | D | C . E |
+| F | F | F |
+| E | C#m | F | F# |
+| E | Ab |
+| F Dm E | F |
+| F | Dm | B | C# | F | F | C# | F# | 
+| C | F | Bb | C C#m | C | Ab7 |
+| Ab | F |
+| F | D#m | D |
+| C | F |
+| F Dm E#| C E#m |
+| F Dm E#| C E#m |
+| F | Dm | C# | F |
+| C# C D . | C# | 
+| F | Ab | D | 
+| C# | F | E | C C#m	 |
+| A | C# | F | C C | C C |
