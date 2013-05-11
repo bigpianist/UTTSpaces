@@ -234,35 +234,25 @@ def createUTTSpaceFromStringsAndStartChord(sUTT1, sUTT2, startChord, stripInvers
 
 #add edges for every node in your graph between two nodes whose path between 
 #them are the series of transformations represented by pathString
-def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X', stripInverse = False):
-	#print 'original path string: ' + pathString
-	if UTT1.identifier == UTT2.identifier:
-		raise ValueError, \
-  "UTT1 and UTT2 have same identifier"
-	#first, translate the path to the difference in indices, since our graph is 2D with UTTs on each axis
-	UTT1Diff = 0
-	UTT2Diff = 0
-	for c in pathString.split('|'):
-		if c == UTT1.identifier:
-			UTT1Diff -= 1
-		elif c == UTT2.identifier:
-			UTT2Diff += 1
-	indexDiff = [UTT1Diff, UTT2Diff]
+def addShortcut(graph, pathString, distanceVal, identifier = 'X', stripInverse = False):
 	#make ALL THE NEIGHBORS!
+	print 'identifier to add is "' + str(identifier) + '"'
 	for i in range(len(graph)):
 		for j in range(len(graph[i])):
 			identifiers = pathString.split('|')
-			shortCutX = -1
-			shortCutY = -1
+			shortCutX = i
+			shortCutY = j
 			print identifiers
 			for transIndex in range(len(identifiers)):
-				for neigh in graph[i][j].neighbors:
-					if neigh[1] == identifiers[transIndex]:
-						print 'found neighbor with id ' + str(identifiers[transIndex])
+				print transIndex
+				for neigh in graph[shortCutX][shortCutY].neighbors:
+					print 'comparing neighbor ' + str(neigh[2]) + ' with id ' + str(identifiers[transIndex])
+					if neigh[2] == identifiers[transIndex]:
+						print 'found neighbor with id ' + str(identifiers[transIndex]) + ', chord: ' + chordToString(graph[neigh[0][0]][neigh[0][1]].chord)
 						shortCutX = neigh[0][0]
 						shortCutY = neigh[0][1]
-					else:
-						print 'comparing neighbor ' + str(neigh[2]) + ' with id ' + str(identifiers[transIndex])
+						break
+			print 'making neighbors for ' + chordToString(graph[i][j].chord) + ' and ' + chordToString(graph[shortCutX][shortCutY].chord)
 			makeNeighbors(graph[i][j], graph[shortCutX][shortCutY], distanceVal, identifier, stripInverse)
 
 def chordFromString(sChord):
@@ -642,9 +632,9 @@ def main():
 
 	print checkUTTSpace(nGraph)
 
-	addShortcut(nGraph, uttA, uttB, 'X|X|X|P', 1, 'R', True)
-	addShortcut(nGraph, uttA, uttB, 'X|X|X|X|P', 1, 'L', True)
-	addShortcut(nGraph, uttA, uttB, 'R|L', .5, 'RL', True)
+	addShortcut(nGraph, 'X|X|X|P', 1, 'R', True)
+	addShortcut(nGraph, 'X|X|X|X|P', 1, 'L', True)
+	addShortcut(nGraph, 'R|L', 1.9, 'RL', True)
 
 	#searchPath = shortestPath(nGraph, chordCompare, nGraph[-1][0], bbMinor)
 	#print getDistancesAndTransformationsFromPath(nGraph, searchPath)
