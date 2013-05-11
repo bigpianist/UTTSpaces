@@ -65,7 +65,7 @@ class UTT:
 		UTTExtra = UTTExtra.translate(None, ')')
 		#print 'UTTextra: ' +str(UTTExtra)
 		extraStuff = UTTExtra.split(',')
-		dist = int(extraStuff[1].strip())
+		dist = float(extraStuff[1].strip())
 		ident = extraStuff[2].strip()
 		#print 'extra stuff: (' + str(dist) +',' + ident +')'
 		return UTT(switch, int(splitUTT[1]), int(splitUTT[2]), dist, ident)
@@ -251,8 +251,18 @@ def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X', st
 	#make ALL THE NEIGHBORS!
 	for i in range(len(graph)):
 		for j in range(len(graph[i])):
-			shortCutX = (i+UTT1Diff) % len(graph)
-			shortCutY = (j+UTT2Diff) % len(graph[i])
+			identifiers = pathString.split('|')
+			shortCutX = -1
+			shortCutY = -1
+			print identifiers
+			for transIndex in range(len(identifiers)):
+				for neigh in graph[i][j].neighbors:
+					if neigh[1] == identifiers[transIndex]:
+						print 'found neighbor with id ' + str(identifiers[transIndex])
+						shortCutX = neigh[0][0]
+						shortCutY = neigh[0][1]
+					else:
+						print 'comparing neighbor ' + str(neigh[2]) + ' with id ' + str(identifiers[transIndex])
 			makeNeighbors(graph[i][j], graph[shortCutX][shortCutY], distanceVal, identifier, stripInverse)
 
 def chordFromString(sChord):
@@ -351,7 +361,7 @@ def getDistancesAndTransformationsFromPath(graph, path):
 	totalDist = 0
 	transforms = ""
 	for dt in distTrans:
-		totalDist += int(dt[0])
+		totalDist += float(dt[0])
 		transforms += dt[1] +'|'
 	return (totalDist,transforms[:-1])
 
@@ -634,7 +644,7 @@ def main():
 
 	addShortcut(nGraph, uttA, uttB, 'X|X|X|P', 1, 'R', True)
 	addShortcut(nGraph, uttA, uttB, 'X|X|X|X|P', 1, 'L', True)
-	addShortcut(nGraph, uttA, uttB, 'R|L', .5, 'R|L', True)
+	addShortcut(nGraph, uttA, uttB, 'R|L', .5, 'RL', True)
 
 	#searchPath = shortestPath(nGraph, chordCompare, nGraph[-1][0], bbMinor)
 	#print getDistancesAndTransformationsFromPath(nGraph, searchPath)
