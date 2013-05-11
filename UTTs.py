@@ -5,6 +5,7 @@ from DijkstraShortestPath import shortestPath
 from Node2D import Node2DGraph
 import random
 song1 = 'song1.txt'
+neoTest = 'NeoTest.txt'
 song1X = 'song1Limited.txt'
 song2 = 'song2Edited.txt'
 song3 = 'song3.txt'
@@ -169,13 +170,16 @@ def createDictGraphFromNodeGraph(graph):
 #def createGraphFromUTTs(listOfUTTs):
 	#for UTT in
 	#ORDER MATTERS! You must pass these neighbors in order of the forward transformation, so that transformations can be recovered later.
-def makeNeighbors(node1, node2, distanceBetweenThem, transformIdentifier):
+def makeNeighbors(node1, node2, distanceBetweenThem, transformIdentifier, stripInverse = False):
 	node1.addNeighbor(node2, distanceBetweenThem, transformIdentifier)
 	#add '-1' for the inverse transform
-	node2.addNeighbor(node1, distanceBetweenThem, transformIdentifier + '-1')
+	inverseID = transformIdentifier
+	if not stripInverse:
+		inverseID = inverseID + '-1'
+	node2.addNeighbor(node1, distanceBetweenThem, inverseID)
 
 
-def make2DNodeGraph(UTT1, UTT2):
+def make2DNodeGraph(UTT1, UTT2, stripInverse = False):
 	dGraph = []
 	#create a new graph for implementing Dijkstra
 	prevColSpace = None
@@ -191,23 +195,23 @@ def make2DNodeGraph(UTT1, UTT2):
 			dGraph[0].append(newNode)
 			#if index greater than one, add an edge backwards
 			if x > 0:
-				makeNeighbors(dGraph[1][y], newNode, UTT1.distanceUnit, UTT1.identifier)
+				makeNeighbors(dGraph[1][y], newNode, UTT1.distanceUnit, UTT1.identifier, stripInverse)
 				#newNode.addNeighbor(dGraph[x-1][y], UTT1.distanceUnit)
 				#dGraph[x-1][y].addNeighbor(newNode, UTT1.distanceUnit)
 				if chordCompare(dGraph[1][y].chord, newNode.chord):
 					print 'adding edge for identical chord at colSpace[index - 1], colSpace[index], index = ' + str(index)
 			if x == len(UTT1.space) - 1:
-				makeNeighbors(newNode, dGraph[-1][y], UTT1.distanceUnit, UTT1.identifier)
+				makeNeighbors(newNode, dGraph[-1][y], UTT1.distanceUnit, UTT1.identifier, stripInverse)
 			if y > 0:
 				if chordCompare(newNode.chord, dGraph[0][y - 1].chord):
 					print 'adding edge for identical chord at colSpace[index], prevColSpace[index], index = ' + str(index)
-				makeNeighbors(dGraph[0][y-1], newNode, UTT2.distanceUnit, UTT2.identifier)
+				makeNeighbors(dGraph[0][y-1], newNode, UTT2.distanceUnit, UTT2.identifier, stripInverse)
 				#newNode.addNeighbor(dGraph[x][y - 1], UTT2.distanceUnit)
 				#dGraph[x][y - 1].addNeighbor(newNode, UTT2.distanceUnit)
 
 		if chordCompare(colSpace[-1], colSpace[0]):
 			print 'adding edge for identical chord at colSpace[-1], colSpace[0]'
-		makeNeighbors(dGraph[0][-1],dGraph[0][0], UTT2.distanceUnit, UTT2.identifier)
+		makeNeighbors(dGraph[0][-1],dGraph[0][0], UTT2.distanceUnit, UTT2.identifier, stripInverse)
 		#G.add_edge(colSpace[-1], colSpace[0])
 		#prevColSpace = colSpace
 	return dGraph
@@ -221,16 +225,16 @@ def print2DNodeGraph(graph):
 			xString += chordToString(graph[x][y].chord) + '-'
 		print xString
 
-def createUTTSpaceFromStringsAndStartChord(sUTT1, sUTT2, startChord):
+def createUTTSpaceFromStringsAndStartChord(sUTT1, sUTT2, startChord, stripInverse = False):
 	UTT1 = UTT.fromS(sUTT1)
 	UTT2 = UTT.fromS(sUTT2)
 	UTT1.computeSpaceAndDistance(startChord)
 	UTT2.computeSpaceAndDistance(startChord)
-	return (UTT1, UTT2, make2DNodeGraph(UTT1, UTT2))
+	return (UTT1, UTT2, make2DNodeGraph(UTT1, UTT2, stripInverse))
 
 #add edges for every node in your graph between two nodes whose path between 
 #them are the series of transformations represented by pathString
-def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X'):
+def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X', stripInverse = False):
 	#print 'original path string: ' + pathString
 	if UTT1.identifier == UTT2.identifier:
 		raise ValueError, \
@@ -238,7 +242,7 @@ def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X'):
 	#first, translate the path to the difference in indices, since our graph is 2D with UTTs on each axis
 	UTT1Diff = 0
 	UTT2Diff = 0
-	for c in pathString:
+	for c in pathString.split('|'):
 		if c == UTT1.identifier:
 			UTT1Diff -= 1
 		elif c == UTT2.identifier:
@@ -249,7 +253,7 @@ def addShortcut(graph, UTT1, UTT2, pathString, distanceVal, identifier = 'X'):
 		for j in range(len(graph[i])):
 			shortCutX = (i+UTT1Diff) % len(graph)
 			shortCutY = (j+UTT2Diff) % len(graph[i])
-			makeNeighbors(graph[i][j], graph[shortCutX][shortCutY], distanceVal, identifier)
+			makeNeighbors(graph[i][j], graph[shortCutX][shortCutY], distanceVal, identifier, stripInverse)
 
 def chordFromString(sChord):
 	saveString =sChord
@@ -555,6 +559,7 @@ def main():
 	#pitch.Pitch("Db minor")
 	seedChord = chord.Chord([7,11,2])
 	cSharpMinor = chord.Chord([1,4,8])
+	cMinor = chord.Chord([0,3,7])
 	eMinor = chord.Chord([4,7,11])
 	gMinor = chord.Chord([7,10,2])
 	fMinor = chord.Chord([5,8,0])
@@ -565,7 +570,7 @@ def main():
 	cMajor = chord.Chord([0,4,7])
 	fMajor = chord.Chord([5,9,0])
 
-	chordLineStrings = parseChordsFile(song3)
+	chordLineStrings = parseChordsFile(neoTest)
 	chordObjList = []
 	for cl in chordLineStrings:
 		phrase = []
@@ -580,7 +585,7 @@ def main():
 			strPhrase += chordToString(i) + ", "
 			totalChords += 1
 		strPhrase = strPhrase[:-2]
-		print strPhrase
+		#print strPhrase
 	print 'numchords in song ' + str(totalChords)
 
 	#allPaths = []
@@ -620,9 +625,16 @@ def main():
 	#uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 4, 5>, 1, A)", "(<+, 2, 2>, 1, B)", eMinor)
 	#uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 1, 2>, 1, A)", "(<-, 2, 3>, 1, B)", eMinor)
 	#uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 4, 5>, 1, A)", "(<+, 2, 2>, 1, B)", eMinor)
-	uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 1, 2>, 1, A)", "(<+, 2, 2>, 1, B)", eMinor)
-	addShortcut(nGraph, uttA, uttB, 'AAA', 1, identifier = 'C')
-	addShortcut(nGraph, uttA, uttB, 'BBB', 1, identifier = 'D')
+	#uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 1, 2>, 1, A)", "(<+, 2, 2>, 1, B)", eMinor)
+	uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-, 0, 0>, 1, P)", "(<+, 7, 7>, 100, X)", cMinor, True)
+	
+	#uttA,uttB,nGraph = createUTTSpaceFromStringsAndStartChord("(<-,0,0>, 1, P)", "(<-, 9, 3>, 1, R)", cMinor)
+
+	print checkUTTSpace(nGraph)
+
+	addShortcut(nGraph, uttA, uttB, 'X|X|X|P', 1, 'R', True)
+	addShortcut(nGraph, uttA, uttB, 'X|X|X|X|P', 1, 'L', True)
+	addShortcut(nGraph, uttA, uttB, 'R|L', .5, 'R|L', True)
 
 	#searchPath = shortestPath(nGraph, chordCompare, nGraph[-1][0], bbMinor)
 	#print getDistancesAndTransformationsFromPath(nGraph, searchPath)
@@ -631,8 +643,8 @@ def main():
 	print2DNodeGraph(nGraph)
 	#paths = computePathsForChordPhrase(nGraph, chordObjList[0])
 	songDistances = getDistAndTransForSong(nGraph, chordObjList)
-	#printDistancesForSong(songDistances)
-	printDistancesAndChordPhrasesForSong(songDistances, chordObjList)
+	printDistancesForSong(songDistances)
+	#printDistancesAndChordPhrasesForSong(songDistances, chordObjList)
 	#for path in paths:
 	#	print path
 	#print paths[0][1].chord
