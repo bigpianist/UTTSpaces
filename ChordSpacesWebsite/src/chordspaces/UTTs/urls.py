@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from UTTs import views
 
 urlpatterns = patterns('',
-    #url(r'^$', views.index, name='index'),
+    url(r'^$', views.index, name='index'),
     # ex: /polls/5/
     #url(r'^(?P<poll_id>\d+)/$', views.detail, name='detail'),
     url(r'^(?P<mode_1>\d+)/(?P<major_interval_1>\d+)/$', views.Graph2D, name='Graph2D'),

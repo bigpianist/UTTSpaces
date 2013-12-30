@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% for row in d_graph %}
+	{% for colNode in row %}
+		<chordNode chordName="{{colNode.chordName}}" xIndex="{{colNode.xInd}}" yIndex="{{colNode.yInd}}">
+			<Pitches>
+		{% for p in colNode.chord.pitches %}
+				<Pitch>{{p}}</Pitch>{% endfor %}
+			</Pitches>
+			<Neighbors>
+		{% for n in colNode.neighbors %}
+				<Neighbor xIndex="{{n.0.0}}" yIndex="{{n.0.1}}" distance="{{n.1}}" identifier="{{n.2}}"/>{% endfor %}
+			</Neighbors>
+		</chordNode>
+	{% endfor %}	
+{% endfor %}

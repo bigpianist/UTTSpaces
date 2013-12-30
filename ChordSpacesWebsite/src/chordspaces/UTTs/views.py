@@ -29,13 +29,12 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_i
     #for nodeX in dGraph:
     #    for nodeY in nodeX:
     #        print nodeY.chordName
-    return render(request, 'UTTs/index.html', context)#UTT1 + ',' + UTT2
+    return render(request, 'UTTs/graphxml.html', context)#UTT1 + ',' + UTT2
 
-"""def index(request):
-    latest_poll_list = Poll.objects.all().order_by('-pub_date')[:5]
-    context = {'latest_poll_list': latest_poll_list}
-    return render(request, 'polls/index.html', context)
-
+def index(request):
+    print "got to index"
+    return render(request, 'UTTs/index.html', {})
+"""
 def detail(request, poll_id):
     try:
         poll = Poll.objects.get(pk=poll_id)
