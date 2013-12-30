@@ -4,6 +4,7 @@ from music21 import stream, chord, pitch
 from DijkstraShortestPath import shortestPath
 from Node2D import Node2DGraph
 import random
+import re
 song1 = 'song1.txt'
 neoTest = 'NeoTest.txt'
 song1X = 'song1Limited.txt'
@@ -62,7 +63,8 @@ class UTT:
 			#print 'setting switch to true'
 			switch = True
 		UTTExtra = sUTT[sUTT.find(">"):]
-		UTTExtra = UTTExtra.translate(None, ')')
+		#print 'UTTextra: ' +str(UTTExtra)
+		UTTExtra = UTTExtra[:UTTExtra.find(")")]
 		#print 'UTTextra: ' +str(UTTExtra)
 		extraStuff = UTTExtra.split(',')
 		dist = float(extraStuff[1].strip())
@@ -185,21 +187,26 @@ def make2DNodeGraph(UTT1, UTT2, stripInverse = False):
 	prevColSpace = None
 	for x in range(len(UTT1.space)):
 		#if compareChord(iterChord, startChord):
-		#print 'creating row space from: ' + chordToString(UTT1.space[x])
+		print 'creating row space from: ' + chordToString(UTT1.space[x])
 		colSpace = UTT2.allPossibleTransformationsFromTriad(UTT1.space[x])
-		#print 'created column space: ' + str(colSpace)
+		print 'created column space: ' + str(colSpace)
 		dGraph.insert(0,[])
 		for y, colChord in enumerate(colSpace):
 			#create node from rowChord
 			newNode = Node2DGraph(colChord, len(UTT1.space) - x - 1, y)
 			dGraph[0].append(newNode)
 			#if index greater than one, add an edge backwards
+			print dGraph
 			if x > 0:
+				#print 'y = ' + str(y)
+				#print 'dGraph.len = ' + str(len(dGraph))
+				#print 'dGraph[1].len = ' + str(len(dGraph[1]))
+				#print 'column space is: ' + str(colSpace)
 				makeNeighbors(dGraph[1][y], newNode, UTT1.distanceUnit, UTT1.identifier, stripInverse)
 				#newNode.addNeighbor(dGraph[x-1][y], UTT1.distanceUnit)
 				#dGraph[x-1][y].addNeighbor(newNode, UTT1.distanceUnit)
-				if chordCompare(dGraph[1][y].chord, newNode.chord):
-					print 'adding edge for identical chord at colSpace[index - 1], colSpace[index], index = ' + str(index)
+				#if chordCompare(dGraph[1][y].chord, newNode.chord):
+					#print 'adding edge for identical chord at colSpace[index - 1], colSpace[index], index = ' + str(index)
 			if x == len(UTT1.space) - 1:
 				makeNeighbors(newNode, dGraph[-1][y], UTT1.distanceUnit, UTT1.identifier, stripInverse)
 			if y > 0:
@@ -224,6 +231,18 @@ def print2DNodeGraph(graph):
 				#print 'got a lot of neighbors here: ' + str(len(graph[x][y].neighbors))
 			xString += chordToString(graph[x][y].chord) + '-'
 		print xString
+
+def nodeGraph2DToString(graph):
+	gString = ""
+	for x in range(len(graph)):
+		xString = ""
+		for y in range(len(graph[0])):
+			#if len(graph[x][y].neighbors) != 4:
+				#print 'got a lot of neighbors here: ' + str(len(graph[x][y].neighbors))
+			xString += chordToString(graph[x][y].chord) + '-'
+		gString += xString
+		gString += '\n'
+	return gString
 
 def createUTTSpaceFromStringsAndStartChord(sUTT1, sUTT2, startChord, stripInverse = False):
 	UTT1 = UTT.fromS(sUTT1)
