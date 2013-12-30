@@ -2,135 +2,95 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-
-<body>
-	<canvas id='myCanvas' width='750' height='500' style="border:1px solid #d3d3d3;">
-		Canvas not supported
-	</canvas>
-	<div id="xmlPrinter"></div>
-	<table>
-		
-		{% for row in d_graph %}
-			{{row.length}}
-			<tr>
-			{% for colNode in row %}
-				<td>{{ colNode.chordName }}</td>
-			{% endfor %}	
-			<tr>
-		{% endfor %}
-		</tr>
-	</table>
-</body>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery-ui-1.10.1.custom.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/fabric.0.9.15.min.js"></script>
-<script type="text/javascript">
-	var circleRadius = 40;
-	var circleXUnit = 100;
-	var circleYUnit = 100;
-	var xmlString = '<?xml version="1.0"?>';
-
-	drawCircle = function(canvasCtx, xCenter, yCenter, radius){
-		canvasCtx.beginPath();
-		canvasCtx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
-		canvasCtx.stroke();
-	}
-	writeChordText = function(canvasCtx, xLoc, yLoc, chordText){
-		canvasCtx.font = "bold 12px sans-serif";
-		canvasCtx.fillText(chordText, xLoc, yLoc);
-	}
-	drawArrowHead = function(canvasCtx, xLocStart, yLocStart, size, direction){
-
-	}
-	drawArrow = function(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
-		canvasCtx.beginPath();
-		canvasCtx.moveTo(xLocStart, yLocStart);
-		canvasCtx.lineTo(xLocEnd, yLocEnd);
-      	canvasCtx.stroke();
-	}
-	drawArrowBetweenNodes= function(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
-		var c=document.getElementById("myCanvas");
-		var ctx=c.getContext("2d");
-		var circleRadiusX = circleRadius;
-		var circleRadiusY = circleRadius;
-		var nodesWrap = false;
-		if (nodeStartX == nodeEndX){
-			circleRadiusX = 0;
-			if (Math.abs(nodeStartY - nodeEndY) > 1){
-				nodesWrap = true;
-			}
-
-			if (nodeStartY > nodeEndY){
-				circleRadiusY = circleRadiusY * -1;
-			}
-		}
-		else if (nodeStartY == nodeEndY){
-			circleRadiusY = 0;
-			if (Math.abs(nodeStartX - nodeEndX) > 1){
-				nodesWrap = true;
-			}
-			if (nodeStartX > nodeEndX){
-				circleRadiusX = circleRadiusX * -1;
-			}
-		}
-
-		var lineStartX = circleXUnit * (nodeStartX + .5) + circleRadiusX;
-		var lineStartY = circleYUnit * (nodeStartY + .5) + circleRadiusY;
-		var lineEndX = circleXUnit * (nodeEndX + .5) - circleRadiusX;
-		var lineEndY = circleYUnit * (nodeEndY + .5) - circleRadiusY;
-
+<body>
+<table>
+	First transformation: 
+	<tr>
+	<select id="UTT1_switch" class="UTT1">
+	  <option value="+">+</option>
+	  <option value="-">-</option>
+	</select>
 		
-		if (nodesWrap == false){
-			drawArrow(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
-			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
-		}
-		else{
-			//draw dotted line toward the edge of the graph to indicate 
-			//that the node graph wraps around
-		}
-	}
-	buildChordNode = function(xIndex, yIndex, chordString){
-		var c=document.getElementById("myCanvas");
-		var ctx=c.getContext("2d");
-		var circleCenterXLoc = circleXUnit * (xIndex + .5);
-		var circleCenterYLoc = circleYUnit * (yIndex + .5);
-		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius);
-		//write the chord name
-		var estimatedTextSize = 44;
-		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString);
-		//draw arrows to neighbors
-	}
-	{% for row in d_graph %}
-		{% for colNode in row %}
-			xmlString += '<chordNode ';
-			xmlString += 'chordName="{{colNode.chordName}}"';
-			xmlString += 'xIndex="{{colNode.xInd}}"';
-			xmlString += 'yIndex="{{colNode.yInd}}">';
-			xmlString += '<Pitches>';
-			{% for p in colNode.chord.pitches %}
-				xmlString += '<Pitch>{{p}}</Pitch>';
-			{% endfor %}
-			xmlString += '</Pitches>';
-			xmlString += '<Neighbors>';
-			{% for n in colNode.neighbors %}
-				xmlString += '<Neighbor val="{{n.0.0}}.{{n.0.1}}" distance="{{n.1}}" identifier="{{n.2}}"/>';
-			{% endfor %}
-			xmlString += '</Neighbors>';
-			xmlString += '</chordNode>';
-		{% endfor %}	
-	{% endfor %}
-	{% for row in d_graph %}
-		{% for colNode in row %}
-			buildChordNode({{colNode.xInd}}, {{colNode.yInd}}, "{{colNode.chordName}}");
-			{% for n in colNode.neighbors %}
-			drawArrowBetweenNodes({{colNode.xInd}}, {{colNode.yInd}}, {{n.0.0}}, {{n.0.1}});
-			{% endfor %}
-		{% endfor %}	
-	{% endfor %}
+	<select id="UTT1_Major" class="UTT1">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	</select>
 
-	$(document).ready(function() {
-		$('#xmlPrinter').text(xmlString);
+	<select id="UTT1_Minor" class="UTT1">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	</select>
+	<div id="UTT1Disp"/>
+	</tr>
+	<br/>
+	Second transformation: <tr>
+	<select id="UTT2_switch" class="UTT2">
+	  <option value="+">+</option>
+	  <option value="-">-</option>
+	</select>
+		
+	<select id="UTT2_Major" class="UTT2">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	</select>
+
+	<select id="UTT2_Minor" class="UTT2">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	</select>
+	<div id="UTT2Disp"/>
+	</tr>
+
+</table>
+</body>
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".UTT1 , .UTT2").bind('change',function(){
+		$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_switch").val() + ", " + $("#" + this.className + "_Major").val() + ", " + $("#" + this.className + "_Minor").val() + " >");
 	});
-
+	$(".UTT1 , .UTT2").trigger('change');
+});
 </script>
 </html>
+<!--//$.get( "ajax/test.html", function( data ) {
+//  $( ".result" ).html( data );
+//  alert( "Load was performed." );
+//});-->
