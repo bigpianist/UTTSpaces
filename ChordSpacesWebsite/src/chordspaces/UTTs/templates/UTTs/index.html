@@ -5,17 +5,21 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery-ui-1.10.1.custom.min.js"></script>
 <body>
+<canvas id='myCanvas' width='1000' height='750' style="border:1px solid #d3d3d3;">
+	Canvas not supported
+</canvas>
+<br/>
 <table>
 	First transformation: 
 	<tr>
 	<select id="UTT1_switch" class="UTT1">
-	  <option value="+">+</option>
+	  <option value="+" selected="selected">+</option>
 	  <option value="-">-</option>
 	</select>
 		
 	<select id="UTT1_Major" class="UTT1">
 	  <option value="1">1</option>
-	  <option value="2">2</option>
+	  <option value="2" selected="selected">2</option>
 	  <option value="3">3</option>
 	  <option value="4">4</option>
 	  <option value="5">5</option>
@@ -29,7 +33,7 @@
 
 	<select id="UTT1_Minor" class="UTT1">
 	  <option value="1">1</option>
-	  <option value="2">2</option>
+	  <option value="2" selected="selected">2</option>
 	  <option value="3">3</option>
 	  <option value="4">4</option>
 	  <option value="5">5</option>
@@ -46,14 +50,14 @@
 	Second transformation: <tr>
 	<select id="UTT2_switch" class="UTT2">
 	  <option value="+">+</option>
-	  <option value="-">-</option>
+	  <option value="-" selected="selected">-</option>
 	</select>
 		
 	<select id="UTT2_Major" class="UTT2">
 	  <option value="1">1</option>
 	  <option value="2">2</option>
 	  <option value="3">3</option>
-	  <option value="4">4</option>
+	  <option value="4" selected="selected">4</option>
 	  <option value="5">5</option>
 	  <option value="6">6</option>
 	  <option value="7">7</option>
@@ -68,7 +72,7 @@
 	  <option value="2">2</option>
 	  <option value="3">3</option>
 	  <option value="4">4</option>
-	  <option value="5">5</option>
+	  <option value="5" selected="selected">5</option>
 	  <option value="6">6</option>
 	  <option value="7">7</option>
 	  <option value="8">8</option>
@@ -82,24 +86,146 @@
 </table>
 </body>
 <script type="text/javascript">
-$(document).ready(function(){
-	$(".UTT1 , .UTT2").bind('change',function(){
-		$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_switch").val() + ", " + $("#" + this.className + "_Major").val() + ", " + $("#" + this.className + "_Minor").val() + " >");
+	$(document).ready(function(){
+		$(".UTT1 , .UTT2").bind('change',function(){
+			$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_switch").val() + ", " + $("#" + this.className + "_Major").val() + ", " + $("#" + this.className + "_Minor").val() + " >");
+		});
+		$(".UTT1 , .UTT2").trigger('change');
 	});
-	$(".UTT1 , .UTT2").trigger('change');
-});
-function buildGraph(){
-	var url = "";
-	url += $("#UTT1_switch").val() + "/";
-	url += $("#UTT1_Major").val() + "/";
-	url += $("#UTT1_Minor").val() + "/";
-	url += $("#UTT2_switch").val() + "/";
-	url += $("#UTT2_Major").val() + "/";
-	url += $("#UTT2_Minor").val() + "/";
-	$.get( url, function( data ) {
-		$( ".result" ).html( data );
-		alert( "Data Loaded: " + data );
-	});
-}
+	var circleRadius = 40;
+	var circleXUnit = 100;
+	var circleYUnit = 100;
+
+	drawCircle = function(canvasCtx, xCenter, yCenter, radius){
+		console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
+		canvasCtx.beginPath();
+		canvasCtx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
+		canvasCtx.stroke();
+	}
+	writeChordText = function(canvasCtx, xLoc, yLoc, chordText){
+		canvasCtx.font = "bold 12px sans-serif";
+		canvasCtx.fillText(chordText, xLoc, yLoc);
+	}
+	drawArrowHead = function(canvasCtx, xLocStart, yLocStart, size, direction){
+
+	}
+	drawArrow = function(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
+		canvasCtx.beginPath();
+		canvasCtx.moveTo(xLocStart, yLocStart);
+		canvasCtx.lineTo(xLocEnd, yLocEnd);
+      	canvasCtx.stroke();
+	}
+	drawArrowBetweenNodes= function(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
+		var c=document.getElementById("myCanvas");
+		var ctx=c.getContext("2d");
+		var circleRadiusX = circleRadius;
+		var circleRadiusY = circleRadius;
+		var nodesWrap = false;
+		if (nodeStartX == nodeEndX){
+			circleRadiusX = 0;
+			if (Math.abs(nodeStartY - nodeEndY) > 1){
+				nodesWrap = true;
+			}
+
+			if (nodeStartY > nodeEndY){
+				circleRadiusY = circleRadiusY * -1;
+			}
+		}
+		else if (nodeStartY == nodeEndY){
+			circleRadiusY = 0;
+			if (Math.abs(nodeStartX - nodeEndX) > 1){
+				nodesWrap = true;
+			}
+			if (nodeStartX > nodeEndX){
+				circleRadiusX = circleRadiusX * -1;
+			}
+		}
+
+		var lineStartX = circleXUnit * (nodeStartX + .5) + circleRadiusX;
+		var lineStartY = circleYUnit * (nodeStartY + .5) + circleRadiusY;
+		var lineEndX = circleXUnit * (nodeEndX + .5) - circleRadiusX;
+		var lineEndY = circleYUnit * (nodeEndY + .5) - circleRadiusY;
+
+		
+		if (nodesWrap == false){
+			drawArrow(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
+			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
+		}
+		else{
+			//draw dotted line toward the edge of the graph to indicate 
+			//that the node graph wraps around
+		}
+	}
+	clearCanvas = function(){
+		var c=document.getElementById("myCanvas");
+		var ctx=c.getContext("2d");
+		ctx.clearRect(0,0, c.width, c.height);
+	}
+	buildChordNode = function(xIndex, yIndex, chordString){
+		console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ")");
+		console.log("circleXUnit is " + circleXUnit);
+		console.log("circleYUnit is " + circleYUnit);
+		var c=document.getElementById("myCanvas");
+		var ctx=c.getContext("2d");
+		var circleCenterXLoc = circleXUnit * (xIndex + .5);
+		var circleCenterYLoc = circleYUnit * (yIndex + .5);
+		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius);
+		//write the chord name
+		var estimatedTextSize = 44;
+		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString);
+		//draw arrows to neighbors
+	}
+	function buildGraph(){
+		var url = "";
+		url += $("#UTT1_switch").val() + "/";
+		url += $("#UTT1_Major").val() + "/";
+		url += $("#UTT1_Minor").val() + "/";
+		url += $("#UTT2_switch").val() + "/";
+		url += $("#UTT2_Major").val() + "/";
+		url += $("#UTT2_Minor").val() + "/";
+		$.get( url, function( data ) {
+			if (window.DOMParser){
+				clearCanvas();
+				parser=new DOMParser();
+	  			xmlDoc=parser.parseFromString(data,"text/xml");
+	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
+	  			chords=xmlDoc.getElementsByTagName("ChordNode");
+	  			console.log("chords.length is: " + chords.length);
+				for (i = 0; i < chords.length; i++)
+				{
+					//console.log("current chord name: " + chords[i].getAttribute("chordName"));
+					//console.log("current chord xIndex: " + chords[i].getAttribute("xIndex"));
+					//console.log("current chord xIndex: " + chords[i].getAttribute("yIndex"));
+					var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
+					var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+					buildChordNode(curNodeX, curNodeY, chords[i].getAttribute("chordName"));
+					chordNodeChildren = chords[i].childNodes;
+					console.log("chordNodeChildren.length = " + chordNodeChildren.length);
+					for (j = 0; j < chordNodeChildren.length; j++){
+						if (chordNodeChildren[j].tagName == "Neighbors"){
+							console.log("found the neighbors");
+							neighborNodes = chordNodeChildren[j].childNodes;
+							console.log("neighborNodes.length = " + neighborNodes.length);
+							for (k = 0; k < neighborNodes.length; k++){
+								//gotta check for the neighbor tag because there are some blank text tags in between
+								if (neighborNodes[k].tagName == "Neighbor"){
+									drawArrowBetweenNodes(curNodeX, curNodeY, parseInt(neighborNodes[k].getAttribute("xIndex")), parseInt(neighborNodes[k].getAttribute("yIndex")))
+									//console.log("found neighbor at: (" + neighborNodes[k].getAttribute("xIndex") + "," + neighborNodes[k].getAttribute("yIndex") + ")");
+								}
+							}
+						}
+						
+					}
+				}
+	  		}
+	  		else{//Internet Explorer
+	  			alert("Please upgrade to the 21st century and get a different browser");
+	  		}
+			//buildChordNode({{colNode.xInd}}, {{colNode.yInd}}, "{{colNode.chordName}}");
+			//{% for n in colNode.neighbors %}
+			//drawArrowBetweenNodes({{colNode.xInd}}, {{colNode.yInd}}, {{n.0.0}}, {{n.0.1}});
+			//{% endfor %}
+		});
+	}
 </script>
 </html>
