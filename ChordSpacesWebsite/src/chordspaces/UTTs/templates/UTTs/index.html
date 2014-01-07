@@ -102,13 +102,22 @@
 	var selectedCircleLineWidth = 4;
 	var firstTime = true;
 	var gridMargin = 100; 
-	//Gotta keep track of which 2 circles are currently highlighted, by graph index
-	//if only one circle is highlighted, it will always be stored in the "1" vars
+	//Gotta keep track of which chords/circles are currently selected, by graph index
+	//Each selected chord entry is a tuple with [xIndex, yIndex, chordName]
+	//Currently the max is 2, but in the future we may want more of them
+	selected = [];
+	//Gotta keep track of which chords/circles are currently highlighted, by graph index
+	//Each highlighted chord has the same tuple format as above.
+	//These are used to highlight other chords in the graph that are of identical name to the selected chords
+	//It is also used when the user locks down a path, and wants to create another
+	highlightedChords = [];
 	var highlightedX1 = -1;
 	var highlightedY1 = -1;
+	var highlightedChordName1 = "";
 	var highlightedX2 = -1;
 	var highlightedY2 = -1;
-
+	var highlightedChordName2 = "";
+	
 	//add dashedLine to the context:
 	var CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
 	if (CP.lineTo) {
@@ -135,8 +144,10 @@
 	}
 
 
-	function drawCircle(canvasCtx, xCenter, yCenter, radius, width, color){
+	function drawCircle(xCenter, yCenter, radius, width, color){
 		//console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
+		var c=document.getElementById("myCanvas");
+		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
 		canvasCtx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
 		canvasCtx.lineWidth = width;
@@ -266,7 +277,7 @@
 		var ctx=c.getContext("2d");
 		var circleCenterXLoc = circleXUnit * xIndex + gridMargin;
 		var circleCenterYLoc = circleYUnit * yIndex + gridMargin;
-		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius, defaultCircleLineWidth, "");
+		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, defaultCircleLineWidth, "");
 		//write the chord name
 		var estimatedTextSize = 44;
 		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString);
@@ -328,18 +339,88 @@
     	dist = Math.sqrt(Math.pow((center_x - x), 2) + Math.pow((center_y - y), 2));
     	return (dist <= radius);
 	}
-	function isHighlighted(curX, curY){
+	/*function isHighlighted(curX, curY){
 		var retVal = -1;
-		if (highlightedX1 == curX && highlightedY1 == curY){
-			retVal = 1;
+		for (var h = 0; h < selected.length; h++){
+			var highlightedX = highlighted[h][0];
+			var highlightedY = highlighted[h][1];
+			var highlightedName = highlighted[h][2];
+			if (highlightedX == curX && highlightedY == curY){
+				retVal = h;
+			}
+			console.log("highlighted" + h + " is (" + highlightedX + "," + highlightedY + ")");
 		}
-		else if (highlightedX2 == curX && highlightedY2 == curY){
-			retVal = 2;
-		}
-		console.log("highlighted1 is (" + highlightedX1 + "," + highlightedY1 + ")");
-		console.log("highlighted2 is (" + highlightedX2 + "," + highlightedY2 + ")");
 		console.log("isHighlighted(" + curX + "," + curY + ") = " + retVal);
 		return retVal;
+	}*/
+	function isSelected(curX, curY){
+		var retVal = -1;
+		console.log("length of selected: " + selected.length);
+		for (var h = 0; h < selected.length; h++){
+			var selectedX = selected[h][0];
+			var selectedY = selected[h][1];
+			var selectedName = selected[h][2];
+			if (selectedX == curX && selectedY == curY){
+				retVal = h;
+			}
+			console.log("selected[" + h + "] is (" + selectedX + "," + selectedY + ")");
+		}
+		console.log("isSelected(" + curX + "," + curY + ") = " + retVal);
+		return retVal;
+	}
+	function removeSelectedChord(index){
+		//this means we're de-selecting a circle, and it needs to be redrawn
+		selectedX = selected[index][0];
+		selectedY = selected[index][1];
+		selectedChordName = selected[index][2];
+
+		var circleCenterXLoc = circleXUnit * selectedX + gridMargin;
+		var circleCenterYLoc = circleYUnit * selectedY + gridMargin;
+		//clear first
+		clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
+		//rebuild
+		buildChordNode(selectedX, selectedY, selectedChordName);
+		//remove
+		selected.splice(index, 1);
+	}
+	function addSelectedChord(curNodeX, curNodeY, strokeWidth, strokeColor, fillColor){
+		var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
+		var tuple = [];
+		tuple.push(curNodeX, curNodeY, curNodeName);
+		
+		var circleCenterXLoc = circleXUnit * curNodeX + gridMargin;
+		var circleCenterYLoc = circleYUnit * curNodeY + gridMargin;
+
+		var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
+		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, fillColor);
+		selected.push(tuple);
+
+		//now get the path from the previously selected chord to this newly added chord, 
+		//if there are any other selected chords
+		if (selected.length > 1){
+			console.log("getting best path");
+			//get the previously selected chord's indices
+			previousTuple = selected[selected.length - 2];
+			previousNodeX = previousTuple[0];
+			previousNodeY = previousTuple[1];
+			/*shortestPath = */getChordPath(previousNodeX, previousNodeY, curNodeX, curNodeY);
+			//drawChordPath(shortestPath);
+		}
+	}
+	function getHexFromColorName(colorName){
+		var colorHex = "";
+		switch(colorName){
+			case "blue":
+				colorHex = "#007fff";
+				break;
+			case "light blue":
+			case "red":
+			case "light red":
+			case "black":
+				colorHex = "#000000";
+				break;
+		}
+		return colorHex;
 	}
 	function findCanvasClickLoc(event){
 		var c=document.getElementById("myCanvas");
@@ -359,57 +440,14 @@
 	        if (inCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, x, y)){
 				var ctx=c.getContext("2d");
 				console.log("in circle for graph index: (" + curNodeX + "," + curNodeY + ")");
-				highlightedNumber = isHighlighted(curNodeX, curNodeY);
-				if (highlightedNumber != -1){
-					console.log("found highlighted circle " + highlightedNumber);
-					//this means we're de-selecting a circle, and it needs to be redrawn
-					clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
-					var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
-					buildChordNode(curNodeX, curNodeY, curNodeName);
-
-					if (highlightedNumber == 1){
-						//we need to move the 2nd highlighted circle up to the 1 position
-						//since we trigger the search on having #2 highlighted (and thus 2 separate circles selected)
-						highlightedX1 = highlightedX2;
-						highlightedY1 = highlightedY2; 
-					}
-					//either highlightedNumber equals 2, or you've just moved highlighted X2/Y2 to highlighted X1/Y1, either way you need to reset highlighted X2/Y2
-					highlightedX2 = -1;
-					highlightedY2 = -1; 
+				selectedNumber = isSelected(curNodeX, curNodeY);
+				if (selectedNumber != -1){
+					console.log("found selected circle " + selectedNumber);
+					removeSelectedChord(selectedNumber)
 				}
 				else{
 					console.log("circle not highlighted yet");
-					//figure out if some other circle is already selected
-					if (highlightedX1 != -1 && highlightedY1 != -1){
-						console.log("one other circle is, though");
-						if (highlightedX2 == -1 && highlightedY2 == -1){
-							highlightedX2 = curNodeX;
-							highlightedY2 = curNodeY;
-							//clearCircle first if you want it to not just draw over whatever is there
-							//Note: we want to embolden the line by making the stroke bigger
-							////	This goes outside of the circle radius though
-							////	So we have to subtract the difference in stroke from the radius
-							var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) /2;
-							drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
-							//find best path!!
-							//removeCanvasListener();
-							console.log("getting best path");
-							getChordPath(highlightedX1, highlightedY1, highlightedX2, highlightedY2);
-							//addCanvasListener();
-						}
-						//if X2,Y2 != -1,-1, this means that there are already 2 circles highlighted, and you shouldn't do anything
-					}
-					else{
-						//X2,Y2 should never be assigned when X1, Y1 isn't
-						highlightedX1 = curNodeX;
-						highlightedY1 = curNodeY;
-						//clearCircle first if you want it to not just draw over whatever is there
-						//Note: we want to embolden the line by making the stroke bigger
-							////	This goes outside of the circle radius though
-							////	So we have to subtract the difference in stroke (over 2) from the radius
-							var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
-						drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
-					}
+					addSelectedChord(curNodeX, curNodeY, selectedCircleLineWidth, "blue", "blue");	
 				}
 	        }
 		}	
