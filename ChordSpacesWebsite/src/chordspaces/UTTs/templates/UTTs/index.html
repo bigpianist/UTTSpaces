@@ -96,10 +96,16 @@
 	var circleRadius = 40;
 	var circleXUnit = 100;
 	var circleYUnit = 100;
-	var darkBlueHex = "#007fff";
-	var defaultCircleLineColor = "#000000"
-	var defaultCircleLineWidth = 1;
-	var selectedCircleLineWidth = 4;
+	var defaultLineWidth = 1;
+	var defaultLineColor = "black";
+	var defaultTextColor = "black";
+	var defaultFillColor = "white";
+	var selectedLineWidth = 4;
+	var selectedLineColor = "blue";
+	var selectedFillColor = "light blue";
+	var highlightedLineWidth = 4;
+	var highlightedLineColor = "blue";
+	var highlightedFillColor = "light blue";
 	var firstTime = true;
 	var gridMargin = 100; 
 	//Gotta keep track of which chords/circles are currently selected, by graph index
@@ -143,24 +149,29 @@
 	    }
 	}
 
+	function toType(obj) {
+		return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+	}
 
-	function drawCircle(xCenter, yCenter, radius, width, color){
+	function drawCircle(xCenter, yCenter, radius, lineWidth, lineColor, fillColor){
 		//console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
 		var c=document.getElementById("myCanvas");
 		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
 		canvasCtx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
-		canvasCtx.lineWidth = width;
-		if (color == "blue"){
-			canvasCtx.strokeStyle = darkBlueHex;
-		}
-		else{
-			canvasCtx.strokeStyle = defaultCircleLineColor;
-		}
+		canvasCtx.closePath();
+
+		//fill
+		canvasCtx.fillStyle = getHexFromColorName(fillColor);
+		canvasCtx.fill()
+		//stroke
+		canvasCtx.lineWidth = lineWidth;
+		canvasCtx.strokeStyle = getHexFromColorName(lineColor);
 		canvasCtx.stroke();
 	}
-	function writeChordText(canvasCtx, xLoc, yLoc, chordText){
+	function writeChordText(canvasCtx, xLoc, yLoc, chordText, textColor){
 		canvasCtx.font = "bold 12px sans-serif";
+		canvasCtx.fillStyle = textColor;
 		canvasCtx.fillText(chordText, xLoc, yLoc);
 	}
 	function drawArrowHead(canvasCtx, xLocStart, yLocStart, size, direction){
@@ -269,18 +280,22 @@
 		ctx.clearRect(0,0, c.width, c.height);
 		ctx.restore();
 	}
-	function buildChordNode(xIndex, yIndex, chordString){
-		console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ")");
-		console.log("circleXUnit is " + circleXUnit);
-		console.log("circleYUnit is " + circleYUnit);
+	function buildChordNode(xIndex, yIndex, chordString, lineWidth, lineColor, fillColor, textColor){
+		console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ","+ lineWidth + ",'" + lineColor + "','" + fillColor + "','" + textColor + "')");
+		console.log("of types: (" + toType(xIndex) + "," + toType(yIndex) + "," + toType(chordString) + ","+ toType(lineWidth) + ",'" + toType(lineColor) + "','" + toType(fillColor) + "','" + toType(textColor) + "')");
+		//console.log("circleXUnit is " + circleXUnit);
+		//console.log("circleYUnit is " + circleYUnit);
 		var c=document.getElementById("myCanvas");
 		var ctx=c.getContext("2d");
+
 		var circleCenterXLoc = circleXUnit * xIndex + gridMargin;
 		var circleCenterYLoc = circleYUnit * yIndex + gridMargin;
-		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, defaultCircleLineWidth, "");
+		//draw the outline and fill if needed
+		var strokeDiff = (selectedLineWidth - defaultLineWidth) / 2 + 1;
+		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, lineWidth, lineColor, fillColor);
 		//write the chord name
 		var estimatedTextSize = 44;
-		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString);
+		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString, textColor);
 		//draw arrows to neighbors
 	}
 	function getNodeByIndex(xIndex, yIndex){
@@ -379,11 +394,11 @@
 		//clear first
 		clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
 		//rebuild
-		buildChordNode(selectedX, selectedY, selectedChordName);
+		buildChordNode(selectedX, selectedY, selectedChordName, defaultLineWidth, defaultLineColor, defaultFillColor, defaultTextColor);
 		//remove
 		selected.splice(index, 1);
 	}
-	function addSelectedChord(curNodeX, curNodeY, strokeWidth, strokeColor, fillColor){
+	function addSelectedChord(curNodeX, curNodeY, lineWidth, lineColor, fillColor){
 		var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
 		var tuple = [];
 		tuple.push(curNodeX, curNodeY, curNodeName);
@@ -391,8 +406,11 @@
 		var circleCenterXLoc = circleXUnit * curNodeX + gridMargin;
 		var circleCenterYLoc = circleYUnit * curNodeY + gridMargin;
 
-		var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
-		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, fillColor);
+		clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
+
+		buildChordNode(curNodeX, curNodeY, curNodeName, selectedLineWidth, selectedLineColor, selectedFillColor, defaultTextColor);
+		
+		//drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedLineWidth, fillColor);
 		selected.push(tuple);
 
 		//now get the path from the previously selected chord to this newly added chord, 
@@ -414,12 +432,28 @@
 				colorHex = "#007fff";
 				break;
 			case "light blue":
+				colorHex = "#cceaff";
+				break;
 			case "red":
+				colorHex = "#ff333e";
+				break;
 			case "light red":
+				colorHex = "#ffcccf";
+				break;
+			case "green":
+				colorHex = "#39c045";
+				break;
+			case "light green":
+				colorHex = "#bdea9f";
+				break;
+			case "white":
+				colorHex = "#ffffff";
+				break;
 			case "black":
 				colorHex = "#000000";
 				break;
 		}
+		console.log("returning '" + colorHex + "' for '" + colorName + "'");
 		return colorHex;
 	}
 	function findCanvasClickLoc(event){
@@ -447,7 +481,7 @@
 				}
 				else{
 					console.log("circle not highlighted yet");
-					addSelectedChord(curNodeX, curNodeY, selectedCircleLineWidth, "blue", "blue");	
+					addSelectedChord(curNodeX, curNodeY, selectedLineWidth, "blue", "blue");	
 				}
 	        }
 		}	
@@ -490,7 +524,7 @@
 					//console.log("current chord xIndex: " + chords[i].getAttribute("yIndex"));
 					var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
 					var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
-					buildChordNode(curNodeX, curNodeY, chords[i].getAttribute("chordName"));
+					buildChordNode(curNodeX, curNodeY, chords[i].getAttribute("chordName"), defaultLineWidth, defaultLineColor, defaultFillColor, defaultTextColor);
 					chordNodeChildren = chords[i].childNodes;
 					console.log("chordNodeChildren.length = " + chordNodeChildren.length);
 					for (j = 0; j < chordNodeChildren.length; j++){
