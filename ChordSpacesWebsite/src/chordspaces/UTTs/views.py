@@ -24,12 +24,34 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_i
     startChord = chord.Chord([10,1,5])
     iterChord = chord.Chord([10,1,5])#"(<-, 2, 3>, 1, S)", "(<-, 4, 5>, 5, T)"
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
-    context = {'d_graph': dGraph}
+    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2}
     print nodeGraph2DToString(dGraph)
     #for nodeX in dGraph:
     #    for nodeY in nodeX:
     #        print nodeY.chordName
     return render(request, 'UTTs/graphxml.html', context)#UTT1 + ',' + UTT2
+
+def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_interval_2, minor_interval_2, chordRoot1, chordType1, chordRoot2, chordType2):
+    UTT1 = '(<'
+    UTT1 += mode_1 + ','
+    UTT1 += major_interval_1 + ','
+    UTT1 += minor_interval_1 + '>,'
+    UTT1 += '1,A)'
+    UTT2 = '(<'
+    UTT2 += mode_2 + ','
+    UTT2 += major_interval_2 + ','
+    UTT2 += minor_interval_2 + '>,'
+    UTT2 += '1,B)'
+    startChord = chord.Chord([10,1,5])
+    iterChord = chord.Chord([10,1,5])#"(<-, 2, 3>, 1, S)", "(<-, 4, 5>, 5, T)"
+    uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
+    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2 }
+    print nodeGraph2DToString(dGraph)
+    #for nodeX in dGraph:
+    #    for nodeY in nodeX:
+    #        print nodeY.chordName
+    return render(request, 'UTTs/graphxml.html', context)#UTT1 + ',' + UTT2
+
 
 def index(request):
     print "got to index"

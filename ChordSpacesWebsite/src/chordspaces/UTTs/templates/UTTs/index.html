@@ -92,30 +92,49 @@
 		});
 		$(".UTT1 , .UTT2").trigger('change');
 	});
+	var curGraph = -1;
 	var circleRadius = 40;
 	var circleXUnit = 100;
 	var circleYUnit = 100;
+	var darkBlueHex = "#007fff";
+	var defaultCircleLineColor = "#000000"
+	var defaultCircleLineWidth = 1;
+	var selectedCircleLineWidth = 4;
+	var firstTime = true;
+	//Gotta keep track of which 2 circles are currently highlighted, by graph index
+	//if only one circle is highlighted, it will always be stored in the "1" vars
+	var highlightedX1 = -1;
+	var highlightedY1 = -1;
+	var highlightedX2 = -1;
+	var highlightedY2 = -1;
 
-	drawCircle = function(canvasCtx, xCenter, yCenter, radius){
-		console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
+	function drawCircle(canvasCtx, xCenter, yCenter, radius, width, color){
+		//console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
 		canvasCtx.beginPath();
 		canvasCtx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
+		canvasCtx.lineWidth = width;
+		if (color == "blue"){
+			canvasCtx.strokeStyle = darkBlueHex;
+		}
+		else{
+			canvasCtx.strokeStyle = defaultCircleLineColor;
+		}
 		canvasCtx.stroke();
 	}
-	writeChordText = function(canvasCtx, xLoc, yLoc, chordText){
+	function writeChordText(canvasCtx, xLoc, yLoc, chordText){
 		canvasCtx.font = "bold 12px sans-serif";
 		canvasCtx.fillText(chordText, xLoc, yLoc);
 	}
-	drawArrowHead = function(canvasCtx, xLocStart, yLocStart, size, direction){
+	function drawArrowHead(canvasCtx, xLocStart, yLocStart, size, direction){
 
 	}
-	drawArrow = function(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
+	function drawArrow(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
 		canvasCtx.beginPath();
 		canvasCtx.moveTo(xLocStart, yLocStart);
 		canvasCtx.lineTo(xLocEnd, yLocEnd);
       	canvasCtx.stroke();
 	}
-	drawArrowBetweenNodes= function(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
+	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
 		var c=document.getElementById("myCanvas");
 		var ctx=c.getContext("2d");
 		var circleRadiusX = circleRadius;
@@ -156,12 +175,22 @@
 			//that the node graph wraps around
 		}
 	}
-	clearCanvas = function(){
+	function clearCanvas(){
 		var c=document.getElementById("myCanvas");
 		var ctx=c.getContext("2d");
 		ctx.clearRect(0,0, c.width, c.height);
 	}
-	buildChordNode = function(xIndex, yIndex, chordString){
+	function clearCircle(xCenter, yCenter, radius){
+		var c=document.getElementById("myCanvas");
+		var ctx=c.getContext("2d");
+		ctx.beginPath();
+		ctx.arc(xCenter, yCenter, radius, 0,2*Math.PI);
+		ctx.save();
+		ctx.clip();//from: http://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas   BALLER!
+		ctx.clearRect(0,0, c.width, c.height);
+		ctx.restore();
+	}
+	function buildChordNode(xIndex, yIndex, chordString){
 		console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ")");
 		console.log("circleXUnit is " + circleXUnit);
 		console.log("circleYUnit is " + circleYUnit);
@@ -169,11 +198,127 @@
 		var ctx=c.getContext("2d");
 		var circleCenterXLoc = circleXUnit * (xIndex + .5);
 		var circleCenterYLoc = circleYUnit * (yIndex + .5);
-		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius);
+		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius, defaultCircleLineWidth, "");
 		//write the chord name
 		var estimatedTextSize = 44;
 		writeChordText(ctx, circleCenterXLoc - (estimatedTextSize * .5), circleCenterYLoc, chordString);
 		//draw arrows to neighbors
+	}
+	function getNodeByIndex(xIndex, yIndex){
+	    chords=curGraph.getElementsByTagName("ChordNode");
+			//console.log("chords.length is: " + chords.length);
+		for (i = 0; i < chords.length; i++)
+		{
+			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
+			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+			if (curNodeX == xIndex && curNodeY == yIndex){
+				return chords[i];
+			}
+		}
+	}
+	function getNodeNameByIndex(xIndex, yIndex){
+		node = getNodeByIndex(xIndex, yIndex);
+		return node.getAttribute("chordName");
+	}
+	function inCircle(center_x, center_y, radius, x, y){
+    	dist = Math.sqrt(Math.pow((center_x - x), 2) + Math.pow((center_y - y), 2));
+    	return (dist <= radius);
+	}
+	function isHighlighted(curX, curY){
+		var retVal = -1;
+		if (highlightedX1 == curX && highlightedY1 == curY){
+			retVal = 1;
+		}
+		else if (highlightedX2 == curX && highlightedY2 == curY){
+			retVal = 2;
+		}
+		console.log("highlighted1 is (" + highlightedX1 + "," + highlightedY1 + ")")
+		console.log("highlighted2 is (" + highlightedX2 + "," + highlightedY2 + ")")
+		console.log("isHighlighted(" + curX + "," + curY + ") = " + retVal)
+		return retVal;
+	}
+	function addCanvasListener(){
+		var c=document.getElementById("myCanvas");
+		// Add event listener for `click` events.
+		c.addEventListener('click', function(event) {
+		    canvasLeft = c.offsetLeft;
+    		canvasTop = c.offsetTop;
+		    var x = event.pageX - canvasLeft,
+		        y = event.pageY - canvasTop;
+		    // Collision detection between clicked offset and element.
+		    chords=xmlDoc.getElementsByTagName("ChordNode");
+  			//console.log("chords.length is: " + chords.length);
+			for (i = 0; i < chords.length; i++)
+			{
+				var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
+				var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+				var circleCenterXLoc = circleXUnit * (curNodeX + .5);
+				var circleCenterYLoc = circleYUnit * (curNodeY + .5);
+		        if (inCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, x, y)){
+					var ctx=c.getContext("2d");
+					console.log("in circle");
+					highlightedNumber = isHighlighted(curNodeX, curNodeY);
+					if (highlightedNumber != -1){
+						console.log("found highlighted circle " + highlightedNumber);
+						//this means we're de-selecting a circle, and it needs to be redrawn
+						clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
+						var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
+						buildChordNode(curNodeX, curNodeY, curNodeName);
+
+						if (highlightedNumber == 1){
+							//we need to move the 2nd highlighted circle up to the 1 position
+							//since we trigger the search on having #2 highlighted (and thus 2 separate circles selected)
+							highlightedX1 = highlightedX2;
+							highlightedY1 = highlightedY2; 
+						}
+						//either highlightedNumber equals 2, or you've just moved highlighted X2/Y2 to highlighted X1/Y1, either way you need to reset highlighted X2/Y2
+						highlightedX2 = -1;
+						highlightedY2 = -1; 
+					}
+					else{
+						console.log("circle not highlighted yet");
+						//figure out if some other circle is already selected
+						if (highlightedX1 != -1 && highlightedY1 != -1){
+							console.log("one other circle is, though");
+							if (highlightedX2 == -1 && highlightedY2 == -1){
+								highlightedX2 = curNodeX;
+								highlightedY2 = curNodeY;
+								//clearCircle first if you want it to not just draw over whatever is there
+								//Note: we want to embolden the line by making the stroke bigger
+								////	This goes outside of the circle radius though
+								////	So we have to subtract the difference in stroke from the radius
+								var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) /2;
+								drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
+								//find best path!!
+							}
+							//if X2,Y2 != -1,-1, this means that there are already 2 circles highlighted, and you shouldn't do anything
+						}
+						else{
+							//X2,Y2 should never be assigned when X1, Y1 isn't
+							highlightedX1 = curNodeX;
+							highlightedY1 = curNodeY;
+							//clearCircle first if you want it to not just draw over whatever is there
+							//Note: we want to embolden the line by making the stroke bigger
+								////	This goes outside of the circle radius though
+								////	So we have to subtract the difference in stroke (over 2) from the radius
+								var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
+							drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
+						}
+					}
+		        }
+			}
+
+		}, false);
+	}
+	//x and y pairs are the indices for the nodes in the graph
+	function getChordPath(x1, y1, x2, y2){
+		var url = "";
+		url += $("#UTT1_switch").val() + "/";
+		url += $("#UTT1_Major").val() + "/";
+		url += $("#UTT1_Minor").val() + "/";
+		url += $("#UTT2_switch").val() + "/";
+		url += $("#UTT2_Major").val() + "/";
+		url += $("#UTT2_Minor").val() + "/";
 	}
 	function buildGraph(){
 		var url = "";
@@ -183,11 +328,16 @@
 		url += $("#UTT2_switch").val() + "/";
 		url += $("#UTT2_Major").val() + "/";
 		url += $("#UTT2_Minor").val() + "/";
+		clearCanvas();
+		highlightedX1 = -1;
+		highlightedY1 = -1;
+		highlightedX2 = -1;
+		highlightedY2 = -1;
 		$.get( url, function( data ) {
 			if (window.DOMParser){
-				clearCanvas();
 				parser=new DOMParser();
 	  			xmlDoc=parser.parseFromString(data,"text/xml");
+	  			curGraph = xmlDoc;
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
 	  			chords=xmlDoc.getElementsByTagName("ChordNode");
 	  			console.log("chords.length is: " + chords.length);
@@ -226,6 +376,12 @@
 			//drawArrowBetweenNodes({{colNode.xInd}}, {{colNode.yInd}}, {{n.0.0}}, {{n.0.1}});
 			//{% endfor %}
 		});
+		if (firstTime){
+			//instead of using firstTime, we could just do it on document load, as long as the canvas is not visible on docload
+			addCanvasListener();
+			firstTime = false;
+		}
 	}
+
 </script>
 </html>
