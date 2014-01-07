@@ -101,12 +101,39 @@
 	var defaultCircleLineWidth = 1;
 	var selectedCircleLineWidth = 4;
 	var firstTime = true;
+	var gridMargin = 100; 
 	//Gotta keep track of which 2 circles are currently highlighted, by graph index
 	//if only one circle is highlighted, it will always be stored in the "1" vars
 	var highlightedX1 = -1;
 	var highlightedY1 = -1;
 	var highlightedX2 = -1;
 	var highlightedY2 = -1;
+
+	//add dashedLine to the context:
+	var CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+	if (CP.lineTo) {
+	    CP.dashedLine = function(x, y, x2, y2, da) {
+	        if (!da) da = [10,5];
+	        this.save();
+	        var dx = (x2-x), dy = (y2-y);
+	        var len = Math.sqrt(dx*dx + dy*dy);
+	        var rot = Math.atan2(dy, dx);
+	        this.translate(x, y);
+	        this.moveTo(0, 0);
+	        this.rotate(rot);       
+	        var dc = da.length;
+	        var di = 0, draw = true;
+	        x = 0;
+	        while (len > x) {
+	            x += da[di++ % dc];
+	            if (x > len) x = len;
+	            draw ? this.lineTo(x, 0): this.moveTo(x, 0);
+	            draw = !draw;
+	        }       
+	        this.restore();
+	    }
+	}
+
 
 	function drawCircle(canvasCtx, xCenter, yCenter, radius, width, color){
 		//console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
@@ -128,10 +155,14 @@
 	function drawArrowHead(canvasCtx, xLocStart, yLocStart, size, direction){
 
 	}
-	function drawArrow(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
+	function drawArrowLine(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
 		canvasCtx.beginPath();
 		canvasCtx.moveTo(xLocStart, yLocStart);
 		canvasCtx.lineTo(xLocEnd, yLocEnd);
+      	canvasCtx.stroke();
+	}
+	function drawArrowDashedLine(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
+		canvasCtx.dashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd);
       	canvasCtx.stroke();
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
@@ -140,10 +171,17 @@
 		var circleRadiusX = circleRadius;
 		var circleRadiusY = circleRadius;
 		var nodesWrap = false;
+		var lineDirection = -1;//direction will be a number from 0-3 depiction direction 0 = up, 1 = right, 2 = down, 3 = left
 		if (nodeStartX == nodeEndX){
 			circleRadiusX = 0;
 			if (Math.abs(nodeStartY - nodeEndY) > 1){
 				nodesWrap = true;
+				if (nodeStartY > nodeEndY){
+					lineDirection = 2;//if the start node is above, the direction of the line is down
+				}
+				else{
+					lineDirection = 0;
+				}
 			}
 
 			if (nodeStartY > nodeEndY){
@@ -154,25 +192,55 @@
 			circleRadiusY = 0;
 			if (Math.abs(nodeStartX - nodeEndX) > 1){
 				nodesWrap = true;
+				if (nodeStartX > nodeEndX){
+					lineDirection = 1;//if the start node is to the right, the direction of the line is right
+				}
+				else{
+					lineDirection = 3;
+				}
 			}
 			if (nodeStartX > nodeEndX){
 				circleRadiusX = circleRadiusX * -1;
 			}
 		}
 
-		var lineStartX = circleXUnit * (nodeStartX + .5) + circleRadiusX;
-		var lineStartY = circleYUnit * (nodeStartY + .5) + circleRadiusY;
-		var lineEndX = circleXUnit * (nodeEndX + .5) - circleRadiusX;
-		var lineEndY = circleYUnit * (nodeEndY + .5) - circleRadiusY;
+		var lineStartX = circleXUnit * nodeStartX + circleRadiusX + gridMargin;
+		var lineStartY = circleYUnit * nodeStartY + circleRadiusY + gridMargin;
+		var lineEndX = circleXUnit * nodeEndX - circleRadiusX + gridMargin;
+		var lineEndY = circleYUnit * nodeEndY - circleRadiusY + gridMargin;
 
 		
 		if (nodesWrap == false){
-			drawArrow(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
+			drawArrowLine(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
 			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		}
 		else{
 			//draw dotted line toward the edge of the graph to indicate 
 			//that the node graph wraps around
+			var dottedLineLength = circleRadius;
+			lineStartX = circleXUnit * nodeStartX + gridMargin;
+			lineStartY = circleYUnit * nodeStartY + gridMargin;
+			var lineEndX = lineStartX;
+			var lineEndY = lineStartY;
+			switch (lineDirection){
+			case 0: 
+				lineStartY = lineStartY - dottedLineLength;
+				lineEndY = lineStartY - dottedLineLength;
+				break;
+			case 1:
+				lineStartX = lineStartX + dottedLineLength;
+				lineEndX = lineStartX + dottedLineLength;
+				break;
+			case 2: 
+				lineStartY = lineStartY + dottedLineLength;
+				lineEndY = lineStartY + dottedLineLength;
+				break;
+			case 3:
+				lineStartX = lineStartX - dottedLineLength;
+				lineEndX = lineStartX - dottedLineLength;
+				break;
+			}
+			drawArrowDashedLine(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
 		}
 	}
 	function clearCanvas(){
@@ -196,8 +264,8 @@
 		console.log("circleYUnit is " + circleYUnit);
 		var c=document.getElementById("myCanvas");
 		var ctx=c.getContext("2d");
-		var circleCenterXLoc = circleXUnit * (xIndex + .5);
-		var circleCenterYLoc = circleYUnit * (yIndex + .5);
+		var circleCenterXLoc = circleXUnit * xIndex + gridMargin;
+		var circleCenterYLoc = circleYUnit * yIndex + gridMargin;
 		drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius, defaultCircleLineWidth, "");
 		//write the chord name
 		var estimatedTextSize = 44;
@@ -205,20 +273,56 @@
 		//draw arrows to neighbors
 	}
 	function getNodeByIndex(xIndex, yIndex){
-	    chords=curGraph.getElementsByTagName("ChordNode");
-			//console.log("chords.length is: " + chords.length);
-		for (i = 0; i < chords.length; i++)
+		parser=new DOMParser();
+		graphXmlDoc=parser.parseFromString(curGraph,"text/xml");
+	    chordNodes =graphXmlDoc.getElementsByTagName("ChordNode");
+		for (var k = 0; k < chordNodes.length; k++)
 		{
-			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
-			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
-			if (curNodeX == xIndex && curNodeY == yIndex){
-				return chords[i];
+			var curNodeIndexX = parseInt(chordNodes[k].getAttribute("xIndex"));
+			var curNodeIndexY = parseInt(chordNodes[k].getAttribute("yIndex"));
+			if (curNodeIndexX == xIndex && curNodeIndexY == yIndex){
+				return chords[k];
 			}
 		}
 	}
 	function getNodeNameByIndex(xIndex, yIndex){
 		node = getNodeByIndex(xIndex, yIndex);
 		return node.getAttribute("chordName");
+	}
+	function getNodePitchesByIndex(xIndex, yIndex){
+		node = getNodeByIndex(xIndex, yIndex);
+		pitchesNode = node.getElementsByTagName("Pitches")
+		pitchNodes = pitchesNode[0].childNodes;
+		pitches = [];
+		var whitespace = /^\s*$/;
+		for (var l = 0; l < pitchNodes.length; l++){
+			if (!whitespace.test(pitchNodes[l].textContent)){
+				pitches.push(pitchNodes[l].textContent);
+			}
+		}
+		console.log(pitches);
+		return pitches;
+	}
+	//x and y pairs are the indices for the nodes in the graph
+	function getChordPath(x1, y1, x2, y2){
+		var url = "";
+		url += $("#UTT1_switch").val() + "/";
+		url += $("#UTT1_Major").val() + "/";
+		url += $("#UTT1_Minor").val() + "/";
+		url += $("#UTT2_switch").val() + "/";
+		url += $("#UTT2_Major").val() + "/";
+		url += $("#UTT2_Minor").val() + "/";
+		pitches1 = getNodePitchesByIndex(x1, y1);
+		pitches2 = getNodePitchesByIndex(x2, y2);
+		for (var m = 0; m < pitches1.length; m++){
+			url += pitches1[m] +"/";
+		}
+		for (var m = 0; m < pitches1.length; m++){
+			url += pitches2[m] +"/";
+		}
+		$.get( url, function( data ) {
+			alert(data);
+		});
 	}
 	function inCircle(center_x, center_y, radius, x, y){
     	dist = Math.sqrt(Math.pow((center_x - x), 2) + Math.pow((center_y - y), 2));
@@ -232,93 +336,93 @@
 		else if (highlightedX2 == curX && highlightedY2 == curY){
 			retVal = 2;
 		}
-		console.log("highlighted1 is (" + highlightedX1 + "," + highlightedY1 + ")")
-		console.log("highlighted2 is (" + highlightedX2 + "," + highlightedY2 + ")")
-		console.log("isHighlighted(" + curX + "," + curY + ") = " + retVal)
+		console.log("highlighted1 is (" + highlightedX1 + "," + highlightedY1 + ")");
+		console.log("highlighted2 is (" + highlightedX2 + "," + highlightedY2 + ")");
+		console.log("isHighlighted(" + curX + "," + curY + ") = " + retVal);
 		return retVal;
+	}
+	function findCanvasClickLoc(event){
+		var c=document.getElementById("myCanvas");
+		canvasLeft = c.offsetLeft;
+		canvasTop = c.offsetTop;
+	    var x = event.pageX - canvasLeft,
+	        y = event.pageY - canvasTop;
+	    // Collision detection between clicked offset and element.
+	    chords=xmlDoc.getElementsByTagName("ChordNode");
+			//console.log("chords.length is: " + chords.length);
+		for (var i = 0; i < chords.length; i++)
+		{
+			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
+			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+			var circleCenterXLoc = circleXUnit * curNodeX + gridMargin;
+			var circleCenterYLoc = circleYUnit * curNodeY + gridMargin;
+	        if (inCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, x, y)){
+				var ctx=c.getContext("2d");
+				console.log("in circle for graph index: (" + curNodeX + "," + curNodeY + ")");
+				highlightedNumber = isHighlighted(curNodeX, curNodeY);
+				if (highlightedNumber != -1){
+					console.log("found highlighted circle " + highlightedNumber);
+					//this means we're de-selecting a circle, and it needs to be redrawn
+					clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
+					var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
+					buildChordNode(curNodeX, curNodeY, curNodeName);
+
+					if (highlightedNumber == 1){
+						//we need to move the 2nd highlighted circle up to the 1 position
+						//since we trigger the search on having #2 highlighted (and thus 2 separate circles selected)
+						highlightedX1 = highlightedX2;
+						highlightedY1 = highlightedY2; 
+					}
+					//either highlightedNumber equals 2, or you've just moved highlighted X2/Y2 to highlighted X1/Y1, either way you need to reset highlighted X2/Y2
+					highlightedX2 = -1;
+					highlightedY2 = -1; 
+				}
+				else{
+					console.log("circle not highlighted yet");
+					//figure out if some other circle is already selected
+					if (highlightedX1 != -1 && highlightedY1 != -1){
+						console.log("one other circle is, though");
+						if (highlightedX2 == -1 && highlightedY2 == -1){
+							highlightedX2 = curNodeX;
+							highlightedY2 = curNodeY;
+							//clearCircle first if you want it to not just draw over whatever is there
+							//Note: we want to embolden the line by making the stroke bigger
+							////	This goes outside of the circle radius though
+							////	So we have to subtract the difference in stroke from the radius
+							var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) /2;
+							drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
+							//find best path!!
+							//removeCanvasListener();
+							console.log("getting best path");
+							getChordPath(highlightedX1, highlightedY1, highlightedX2, highlightedY2);
+							//addCanvasListener();
+						}
+						//if X2,Y2 != -1,-1, this means that there are already 2 circles highlighted, and you shouldn't do anything
+					}
+					else{
+						//X2,Y2 should never be assigned when X1, Y1 isn't
+						highlightedX1 = curNodeX;
+						highlightedY1 = curNodeY;
+						//clearCircle first if you want it to not just draw over whatever is there
+						//Note: we want to embolden the line by making the stroke bigger
+							////	This goes outside of the circle radius though
+							////	So we have to subtract the difference in stroke (over 2) from the radius
+							var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
+						drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
+					}
+				}
+	        }
+		}	
 	}
 	function addCanvasListener(){
 		var c=document.getElementById("myCanvas");
 		// Add event listener for `click` events.
-		c.addEventListener('click', function(event) {
-		    canvasLeft = c.offsetLeft;
-    		canvasTop = c.offsetTop;
-		    var x = event.pageX - canvasLeft,
-		        y = event.pageY - canvasTop;
-		    // Collision detection between clicked offset and element.
-		    chords=xmlDoc.getElementsByTagName("ChordNode");
-  			//console.log("chords.length is: " + chords.length);
-			for (i = 0; i < chords.length; i++)
-			{
-				var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
-				var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
-				var circleCenterXLoc = circleXUnit * (curNodeX + .5);
-				var circleCenterYLoc = circleYUnit * (curNodeY + .5);
-		        if (inCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, x, y)){
-					var ctx=c.getContext("2d");
-					console.log("in circle");
-					highlightedNumber = isHighlighted(curNodeX, curNodeY);
-					if (highlightedNumber != -1){
-						console.log("found highlighted circle " + highlightedNumber);
-						//this means we're de-selecting a circle, and it needs to be redrawn
-						clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
-						var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
-						buildChordNode(curNodeX, curNodeY, curNodeName);
-
-						if (highlightedNumber == 1){
-							//we need to move the 2nd highlighted circle up to the 1 position
-							//since we trigger the search on having #2 highlighted (and thus 2 separate circles selected)
-							highlightedX1 = highlightedX2;
-							highlightedY1 = highlightedY2; 
-						}
-						//either highlightedNumber equals 2, or you've just moved highlighted X2/Y2 to highlighted X1/Y1, either way you need to reset highlighted X2/Y2
-						highlightedX2 = -1;
-						highlightedY2 = -1; 
-					}
-					else{
-						console.log("circle not highlighted yet");
-						//figure out if some other circle is already selected
-						if (highlightedX1 != -1 && highlightedY1 != -1){
-							console.log("one other circle is, though");
-							if (highlightedX2 == -1 && highlightedY2 == -1){
-								highlightedX2 = curNodeX;
-								highlightedY2 = curNodeY;
-								//clearCircle first if you want it to not just draw over whatever is there
-								//Note: we want to embolden the line by making the stroke bigger
-								////	This goes outside of the circle radius though
-								////	So we have to subtract the difference in stroke from the radius
-								var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) /2;
-								drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
-								//find best path!!
-							}
-							//if X2,Y2 != -1,-1, this means that there are already 2 circles highlighted, and you shouldn't do anything
-						}
-						else{
-							//X2,Y2 should never be assigned when X1, Y1 isn't
-							highlightedX1 = curNodeX;
-							highlightedY1 = curNodeY;
-							//clearCircle first if you want it to not just draw over whatever is there
-							//Note: we want to embolden the line by making the stroke bigger
-								////	This goes outside of the circle radius though
-								////	So we have to subtract the difference in stroke (over 2) from the radius
-								var strokeDiff = (selectedCircleLineWidth - defaultCircleLineWidth) / 2;
-							drawCircle(ctx, circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedCircleLineWidth, "blue");
-						}
-					}
-		        }
-			}
-
-		}, false);
+		c.addEventListener('click', findCanvasClickLoc, false);
 	}
-	//x and y pairs are the indices for the nodes in the graph
-	function getChordPath(x1, y1, x2, y2){
-		var url = "";
-		url += $("#UTT1_switch").val() + "/";
-		url += $("#UTT1_Major").val() + "/";
-		url += $("#UTT1_Minor").val() + "/";
-		url += $("#UTT2_switch").val() + "/";
-		url += $("#UTT2_Major").val() + "/";
-		url += $("#UTT2_Minor").val() + "/";
+	function removeCanvasListener(){
+		var c=document.getElementById("myCanvas");
+		// Add event listener for `click` events.
+		c.removeEventListener('click', findCanvasClickLoc, false);
 	}
 	function buildGraph(){
 		var url = "";
@@ -337,7 +441,7 @@
 			if (window.DOMParser){
 				parser=new DOMParser();
 	  			xmlDoc=parser.parseFromString(data,"text/xml");
-	  			curGraph = xmlDoc;
+	  			curGraph = (new XMLSerializer()).serializeToString(xmlDoc);
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
 	  			chords=xmlDoc.getElementsByTagName("ChordNode");
 	  			console.log("chords.length is: " + chords.length);

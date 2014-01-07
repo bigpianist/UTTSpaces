@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     #url(r'^(?P<poll_id>\d+)/$', views.detail, name='detail'),
     url(r'^(?P<mode_1>\d+)/(?P<major_interval_1>\d+)/$', views.Graph2D, name='Graph2D'),
     url(r'^(?P<mode_1>[\+-])/(?P<major_interval_1>\d+)/(?P<minor_interval_1>\d+)/(?P<mode_2>[\+-])/(?P<major_interval_2>\d+)/(?P<minor_interval_2>\d+)/$', views.Graph2D, name='Graph2D'),
+    url(r'^(?P<mode_1>[\+-])/(?P<major_interval_1>\d+)/(?P<minor_interval_1>\d+)/(?P<mode_2>[\+-])/(?P<major_interval_2>\d+)/(?P<minor_interval_2>\d+)/(?P<pitch1_1>\d+)/(?P<pitch1_2>\d+)/(?P<pitch1_3>\d+)/(?P<pitch2_1>\d+)/(?P<pitch2_2>\d+)/(?P<pitch2_3>\d+)/$', views.GraphPath, name='GraphPath'),
     # ex: /polls/5/results/
     #url(r'^(?P<poll_id>\d+)/results/$', views.results, name='results'),
     # ex: /polls/5/vote/

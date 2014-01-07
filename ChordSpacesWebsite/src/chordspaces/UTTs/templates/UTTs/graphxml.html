@@ -5,7 +5,7 @@
 		<ChordNode chordName="{{colNode.chordName}}" xIndex="{{colNode.xInd}}" yIndex="{{colNode.yInd}}">
 			<Pitches>
 		{% for p in colNode.chord.pitches %}
-				<Pitch>{{p}}</Pitch>{% endfor %}
+				<Pitch>{{p.pitchClass}}</Pitch>{% endfor %}
 			</Pitches>
 			<Neighbors>
 		{% for n in colNode.neighbors %}
