@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Chords>
-{% for item in shortestPath %}
-		{{ item.chordName }}
+{% for chordNode in shortestPath %}
+		<ChordNode chordName="{{chordNode.chordName}}" xIndex="{{chordNode.xInd}}" yIndex="{{chordNode.yInd}}">
+			<Pitches>
+		{% for p in chordNode.chord.pitches %}
+				<Pitch>{{p.pitchClass}}</Pitch>{% endfor %}
+			</Pitches>
+			<Neighbors>
+		{% for n in chordNode.neighbors %}
+				<Neighbor xIndex="{{n.0.0}}" yIndex="{{n.0.1}}" distance="{{n.1}}" identifier="{{n.2}}"/>{% endfor %}
+			</Neighbors>
+		</ChordNode>
 {% endfor %}
 </Chords>

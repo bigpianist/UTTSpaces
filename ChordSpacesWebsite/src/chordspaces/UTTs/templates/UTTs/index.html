@@ -96,16 +96,25 @@
 	var circleRadius = 40;
 	var circleXUnit = 100;
 	var circleYUnit = 100;
-	var defaultLineWidth = 1;
+
+	var defaultLineWidth = 2;
 	var defaultLineColor = "black";
 	var defaultTextColor = "black";
+
+	var defaultArrowWidth = 4;
+	var defaultArrowColor = "black";
 	var defaultFillColor = "white";
+	var chordPathWidth = 5;
+	var chordPathColor	= "dark blue";
+
 	var selectedLineWidth = 4;
 	var selectedLineColor = "blue";
 	var selectedFillColor = "light blue";
+
 	var highlightedLineWidth = 4;
 	var highlightedLineColor = "blue";
 	var highlightedFillColor = "light blue";
+
 	var firstTime = true;
 	var gridMargin = 100; 
 	//Gotta keep track of which chords/circles are currently selected, by graph index
@@ -125,36 +134,38 @@
 	var highlightedChordName2 = "";
 	
 	//add dashedLine to the context:
+	/*eff the dashed line for the moment
 	var CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
 	if (CP.lineTo) {
-	    CP.dashedLine = function(x, y, x2, y2, da) {
-	        if (!da) da = [10,5];
-	        this.save();
-	        var dx = (x2-x), dy = (y2-y);
-	        var len = Math.sqrt(dx*dx + dy*dy);
-	        var rot = Math.atan2(dy, dx);
-	        this.translate(x, y);
-	        this.moveTo(0, 0);
-	        this.rotate(rot);       
-	        var dc = da.length;
-	        var di = 0, draw = true;
-	        x = 0;
-	        while (len > x) {
-	            x += da[di++ % dc];
-	            if (x > len) x = len;
-	            draw ? this.lineTo(x, 0): this.moveTo(x, 0);
-	            draw = !draw;
-	        }       
-	        this.restore();
+	    CP.dashedLine = function(x, y, x2, y2, dashArray) {
+	        if (!dashArray) dashArray=[10,5];
+		    if (dashLength==0) dashLength = 0.001; // Hack for Safari
+		    var dashCount = dashArray.length;
+		    this.moveTo(x, y);
+		    var dx = (x2-x), dy = (y2-y);
+		    var slope = dx ? dy/dx : 1e15;
+		    var distRemaining = Math.sqrt( dx*dx + dy*dy );
+		    var dashIndex=0, draw=true;
+		    while (distRemaining>=0.1){
+		      var dashLength = dashArray[dashIndex++%dashCount];
+		      if (dashLength > distRemaining) dashLength = distRemaining;
+		      var xStep = Math.sqrt( dashLength*dashLength / (1 + slope*slope) );
+		      if (dx<0) xStep = -xStep;
+		      x += xStep
+		      y += slope*xStep;
+		      this[draw ? 'lineTo' : 'moveTo'](x,y);
+		      distRemaining -= dashLength;
+		      draw = !draw;
+		    }
 	    }
-	}
+	}*/
 
 	function toType(obj) {
 		return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
 	}
 
 	function drawCircle(xCenter, yCenter, radius, lineWidth, lineColor, fillColor){
-		//console.log("drawing circle with centerpoint: (" + xCenter + "," + yCenter + ")");
+		console.log("drawing circle with color/width: (" + lineColor + "," + lineWidth + ")");
 		var c=document.getElementById("myCanvas");
 		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
@@ -174,22 +185,32 @@
 		canvasCtx.fillStyle = textColor;
 		canvasCtx.fillText(chordText, xLoc, yLoc);
 	}
-	function drawArrowHead(canvasCtx, xLocStart, yLocStart, size, direction){
+	function drawArrowHead(xLocStart, yLocStart, sizeX, sizeY, direction){
+		var c=document.getElementById("myCanvas");
+		var canvasCtx=c.getContext("2d");
+		canvasCtx.beginPath();
+		canvasCtx.moveTo(xLocStart, yLocStart);
 
 	}
-	function drawArrowLine(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
+	function drawArrowLine(xLocStart, yLocStart, xLocEnd, yLocEnd, lineWidth, lineColor){
+		var c=document.getElementById("myCanvas");
+		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
 		canvasCtx.moveTo(xLocStart, yLocStart);
 		canvasCtx.lineTo(xLocEnd, yLocEnd);
+		canvasCtx.lineWidth = lineWidth;
+		canvasCtx.strokeStyle = getHexFromColorName(lineColor);
       	canvasCtx.stroke();
 	}
-	function drawArrowDashedLine(canvasCtx, xLocStart, yLocStart, xLocEnd, yLocEnd){
-		canvasCtx.dashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd);
-      	canvasCtx.stroke();
-	}
-	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY){
+	function drawArrowDashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd, lineWidth, lineColor){
 		var c=document.getElementById("myCanvas");
-		var ctx=c.getContext("2d");
+		var canvasCtx=c.getContext("2d");
+		canvasCtx.dashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd, [10,10]);
+		//canvasCtx.lineWidth = lineWidth;
+		//canvasCtx.strokeStyle = getHexFromColorName(lineColor);
+      	canvasCtx.stroke();
+	}
+	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
 		var circleRadiusX = circleRadius;
 		var circleRadiusY = circleRadius;
 		var nodesWrap = false;
@@ -233,7 +254,7 @@
 
 		
 		if (nodesWrap == false){
-			drawArrowLine(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
+			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
 			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		}
 		else{
@@ -262,7 +283,7 @@
 				lineEndX = lineStartX - dottedLineLength;
 				break;
 			}
-			drawArrowDashedLine(ctx, lineStartX, lineStartY, lineEndX, lineEndY);
+			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
 		}
 	}
 	function clearCanvas(){
@@ -281,8 +302,8 @@
 		ctx.restore();
 	}
 	function buildChordNode(xIndex, yIndex, chordString, lineWidth, lineColor, fillColor, textColor){
-		console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ","+ lineWidth + ",'" + lineColor + "','" + fillColor + "','" + textColor + "')");
-		console.log("of types: (" + toType(xIndex) + "," + toType(yIndex) + "," + toType(chordString) + ","+ toType(lineWidth) + ",'" + toType(lineColor) + "','" + toType(fillColor) + "','" + toType(textColor) + "')");
+		//console.log("building chord node with params: (" + xIndex + "," + yIndex + "," + chordString + ","+ lineWidth + ",'" + lineColor + "','" + fillColor + "','" + textColor + "')");
+		//console.log("of types: (" + toType(xIndex) + "," + toType(yIndex) + "," + toType(chordString) + ","+ toType(lineWidth) + ",'" + toType(lineColor) + "','" + toType(fillColor) + "','" + toType(textColor) + "')");
 		//console.log("circleXUnit is " + circleXUnit);
 		//console.log("circleYUnit is " + circleYUnit);
 		var c=document.getElementById("myCanvas");
@@ -291,7 +312,7 @@
 		var circleCenterXLoc = circleXUnit * xIndex + gridMargin;
 		var circleCenterYLoc = circleYUnit * yIndex + gridMargin;
 		//draw the outline and fill if needed
-		var strokeDiff = (selectedLineWidth - defaultLineWidth) / 2 + 1;
+		var strokeDiff = Math.ceil((selectedLineWidth - defaultLineWidth) / 2) + 2;
 		drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, lineWidth, lineColor, fillColor);
 		//write the chord name
 		var estimatedTextSize = 44;
@@ -299,9 +320,7 @@
 		//draw arrows to neighbors
 	}
 	function getNodeByIndex(xIndex, yIndex){
-		parser=new DOMParser();
-		graphXmlDoc=parser.parseFromString(curGraph,"text/xml");
-	    chordNodes =graphXmlDoc.getElementsByTagName("ChordNode");
+	    chordNodes =curGraph.getElementsByTagName("ChordNode");
 		for (var k = 0; k < chordNodes.length; k++)
 		{
 			var curNodeIndexX = parseInt(chordNodes[k].getAttribute("xIndex"));
@@ -338,16 +357,39 @@
 		url += $("#UTT2_switch").val() + "/";
 		url += $("#UTT2_Major").val() + "/";
 		url += $("#UTT2_Minor").val() + "/";
-		pitches1 = getNodePitchesByIndex(x1, y1);
+		/*pitches1 = getNodePitchesByIndex(x1, y1);
 		pitches2 = getNodePitchesByIndex(x2, y2);
 		for (var m = 0; m < pitches1.length; m++){
 			url += pitches1[m] +"/";
 		}
 		for (var m = 0; m < pitches1.length; m++){
 			url += pitches2[m] +"/";
-		}
+		}*/
+		url += x1 + "/";
+		url += y1 + "/";
+		url += x2 + "/";
+		url += y2 + "/";
+		url += x2 + "/";
+		url += y2 + "/";
 		$.get( url, function( data ) {
-			alert(data);
+			//alert(data);
+			parser=new DOMParser();
+  			pathXml=parser.parseFromString(data,"text/xml");
+  			chordsInPath=pathXml.getElementsByTagName("ChordNode");
+  			var curChord = chordsInPath[0], prevChord = 0;
+  			for (var crd = 0; crd < chordsInPath.length; crd++){
+  				prevChord = curChord;
+  				if (crd == 0) continue;
+  				curChord = chordsInPath[crd];
+  				curChordX = parseInt(curChord.getAttribute("xIndex"));
+  				curChordY = parseInt(curChord.getAttribute("yIndex"));
+  				curChordName = parseInt(curChord.getAttribute("chordName"));
+  				prevChordX = parseInt(prevChord.getAttribute("xIndex"));
+  				prevChordY = parseInt(prevChord.getAttribute("yIndex"));
+  				prevChordName = parseInt(prevChord.getAttribute("chordName"));
+  				console.log("drawing arrow from chord [" + curChordX + ", " + curChordY + ", " + curChordName + "] to [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "]" );
+  				drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+  			}
 		});
 	}
 	function inCircle(center_x, center_y, radius, x, y){
@@ -428,6 +470,9 @@
 	function getHexFromColorName(colorName){
 		var colorHex = "";
 		switch(colorName){
+			case "dark blue":
+				colorHex = "#0c03aa";
+				break;
 			case "blue":
 				colorHex = "#007fff";
 				break;
@@ -505,15 +550,13 @@
 		url += $("#UTT2_Major").val() + "/";
 		url += $("#UTT2_Minor").val() + "/";
 		clearCanvas();
-		highlightedX1 = -1;
-		highlightedY1 = -1;
-		highlightedX2 = -1;
-		highlightedY2 = -1;
+		selected = [];
+		highlighted = [];
 		$.get( url, function( data ) {
 			if (window.DOMParser){
 				parser=new DOMParser();
 	  			xmlDoc=parser.parseFromString(data,"text/xml");
-	  			curGraph = (new XMLSerializer()).serializeToString(xmlDoc);
+	  			curGraph = xmlDoc;
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
 	  			chords=xmlDoc.getElementsByTagName("ChordNode");
 	  			console.log("chords.length is: " + chords.length);
@@ -535,7 +578,7 @@
 							for (k = 0; k < neighborNodes.length; k++){
 								//gotta check for the neighbor tag because there are some blank text tags in between
 								if (neighborNodes[k].tagName == "Neighbor"){
-									drawArrowBetweenNodes(curNodeX, curNodeY, parseInt(neighborNodes[k].getAttribute("xIndex")), parseInt(neighborNodes[k].getAttribute("yIndex")))
+									drawArrowBetweenNodes(curNodeX, curNodeY, parseInt(neighborNodes[k].getAttribute("xIndex")), parseInt(neighborNodes[k].getAttribute("yIndex")), defaultArrowWidth, defaultArrowColor);
 									//console.log("found neighbor at: (" + neighborNodes[k].getAttribute("xIndex") + "," + neighborNodes[k].getAttribute("yIndex") + ")");
 								}
 							}

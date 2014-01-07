@@ -44,11 +44,13 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major
     UTT2 += '1,B)'
     
     print "pitches: [" + pitch1_1 + "," + pitch1_2 + "," + pitch1_3 + "]"
-    startChord = chord.Chord([int(pitch1_1), int(pitch1_2), int(pitch1_3)])
-    searchChord = chord.Chord([int(pitch2_1), int(pitch2_2), int(pitch2_3)])
+    #startChord = dGraph[pitch1_1][pitch1_2].chord#chord.Chord([int(pitch1_1), int(pitch1_2), int(pitch1_3)])
+    startChord = chord.Chord([10,1,5])
+    #searchChord = chord.Chord([int(pitch2_1), int(pitch2_2), int(pitch2_3)])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
 
-    shortPath = shortestPath(dGraph, chordCompare, dGraph[-1][0], searchChord)
+    #startChordFind = shortestPath(dGraph, chordCompare, dGraph[-1][0], startChord)
+    shortPath = shortestPath(dGraph, chordCompare, dGraph[int(pitch1_1)][int(pitch1_2)], dGraph[int(pitch1_3)][int(pitch2_1)].chord)
     print str(shortPath)
     context = {'shortestPath': shortPath}
     #print nodeGraph2DToString(dGraph)
