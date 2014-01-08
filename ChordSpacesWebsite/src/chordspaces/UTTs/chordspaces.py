@@ -187,16 +187,16 @@ def make2DNodeGraph(UTT1, UTT2, stripInverse = False):
 	prevColSpace = None
 	for x in range(len(UTT1.space)):
 		#if compareChord(iterChord, startChord):
-		print 'creating row space from: ' + chordToString(UTT1.space[x])
+		#print 'creating row space from: ' + chordToString(UTT1.space[x])
 		colSpace = UTT2.allPossibleTransformationsFromTriad(UTT1.space[x])
-		print 'created column space: ' + str(colSpace)
+		#print 'created column space: ' + str(colSpace)
 		dGraph.insert(0,[])
 		for y, colChord in enumerate(colSpace):
 			#create node from rowChord
 			newNode = Node2DGraph(colChord, len(UTT1.space) - x - 1, y)
 			dGraph[0].append(newNode)
 			#if index greater than one, add an edge backwards
-			print dGraph
+			#print dGraph
 			if x > 0:
 				#print 'y = ' + str(y)
 				#print 'dGraph.len = ' + str(len(dGraph))
@@ -232,11 +232,23 @@ def print2DNodeGraph(graph):
 			xString += chordToString(graph[x][y].chord) + '-'
 		print xString
 
-def nodeGraph2DToString(graph):
+def nodeGraph2DToStringInverted(graph):
 	gString = ""
 	for x in range(len(graph)):
 		xString = ""
 		for y in range(len(graph[0])):
+			#if len(graph[x][y].neighbors) != 4:
+				#print 'got a lot of neighbors here: ' + str(len(graph[x][y].neighbors))
+			xString += chordToString(graph[x][y].chord) + '-'
+		gString += xString
+		gString += '\n'
+	return gString
+
+def nodeGraph2DToString(graph):
+	gString = ""
+	for y in range(len(graph[0])):
+		xString = ""
+		for x in range(len(graph)):
 			#if len(graph[x][y].neighbors) != 4:
 				#print 'got a lot of neighbors here: ' + str(len(graph[x][y].neighbors))
 			xString += chordToString(graph[x][y].chord) + '-'

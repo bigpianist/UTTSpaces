@@ -21,8 +21,7 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_i
     UTT2 += major_interval_2 + ','
     UTT2 += minor_interval_2 + '>,'
     UTT2 += '1,B)'
-    startChord = chord.Chord([10,1,5])
-    iterChord = chord.Chord([10,1,5])#"(<-, 2, 3>, 1, S)", "(<-, 4, 5>, 5, T)"
+    startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
     context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2}
     print nodeGraph2DToString(dGraph)
@@ -31,7 +30,10 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_i
     #        print nodeY.chordName
     return render(request, 'UTTs/graphxml.html', context)#UTT1 + ',' + UTT2
 
-def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_interval_2, minor_interval_2, pitch1_1, pitch1_2, pitch1_3, pitch2_1, pitch2_2, pitch2_3):
+#Since both the front end and back end have access to the same graph, 
+#I just passed the indices of the nodes that I want to search
+#There is a problem with that, which is that sometimes the shortest path points to a closer node
+def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_interval_2, minor_interval_2, x1, y1, x2, y2):
     UTT1 = '(<'
     UTT1 += mode_1 + ','
     UTT1 += major_interval_1 + ','
@@ -42,18 +44,16 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major
     UTT2 += major_interval_2 + ','
     UTT2 += minor_interval_2 + '>,'
     UTT2 += '1,B)'
-    
-    print "pitches: [" + pitch1_1 + "," + pitch1_2 + "," + pitch1_3 + "]"
-    #startChord = dGraph[pitch1_1][pitch1_2].chord#chord.Chord([int(pitch1_1), int(pitch1_2), int(pitch1_3)])
-    startChord = chord.Chord([10,1,5])
-    #searchChord = chord.Chord([int(pitch2_1), int(pitch2_2), int(pitch2_3)])
+
+    startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
 
-    #startChordFind = shortestPath(dGraph, chordCompare, dGraph[-1][0], startChord)
-    shortPath = shortestPath(dGraph, chordCompare, dGraph[int(pitch1_1)][int(pitch1_2)], dGraph[int(pitch1_3)][int(pitch2_1)].chord)
-    print str(shortPath)
+    print "finding path from chord '" + dGraph[int(x1)][int(y1)].chordName + "' to '" + dGraph[int(x2)][int(y2)].chordName + "'"
+    print "finding path from chord '" + chordToString(dGraph[int(x1)][int(y1)].chord) + "' to '" + chordToString(dGraph[int(x2)][int(y2)].chord) + "'"
+    shortPath = shortestPath(dGraph, chordCompare, dGraph[int(x1)][int(y1)], dGraph[int(x2)][int(y2)].chord)
+    print [chordToString(i.chord) + ':'  for i in shortPath]
     context = {'shortestPath': shortPath}
-    #print nodeGraph2DToString(dGraph)
+    print nodeGraph2DToString(dGraph)
     #for nodeX in dGraph:
     #    for nodeY in nodeX:
     #        print nodeY.chordName

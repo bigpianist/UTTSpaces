@@ -369,10 +369,7 @@
 		url += y1 + "/";
 		url += x2 + "/";
 		url += y2 + "/";
-		url += x2 + "/";
-		url += y2 + "/";
 		$.get( url, function( data ) {
-			//alert(data);
 			parser=new DOMParser();
   			pathXml=parser.parseFromString(data,"text/xml");
   			chordsInPath=pathXml.getElementsByTagName("ChordNode");
@@ -383,11 +380,11 @@
   				curChord = chordsInPath[crd];
   				curChordX = parseInt(curChord.getAttribute("xIndex"));
   				curChordY = parseInt(curChord.getAttribute("yIndex"));
-  				curChordName = parseInt(curChord.getAttribute("chordName"));
+  				curChordName = curChord.getAttribute("chordName");
   				prevChordX = parseInt(prevChord.getAttribute("xIndex"));
   				prevChordY = parseInt(prevChord.getAttribute("yIndex"));
-  				prevChordName = parseInt(prevChord.getAttribute("chordName"));
-  				console.log("drawing arrow from chord [" + curChordX + ", " + curChordY + ", " + curChordName + "] to [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "]" );
+  				prevChordName = prevChord.getAttribute("chordName");
+  				console.log("drawing arrow from chord [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "] to [" + curChordX + ", " + curChordY + ", " + curChordName + "]" );
   				drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
   			}
 		});
