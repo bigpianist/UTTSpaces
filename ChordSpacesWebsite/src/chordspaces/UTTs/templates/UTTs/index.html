@@ -117,6 +117,8 @@
 	var highlightedFillColor = "light red";
 	var highlightedTextColor = "black";
 
+	var defaultBackgroundColor = "white";
+
 	var firstTime = true;
 	var gridMargin = 100; 
 	//Gotta keep track of which chords/circles are currently selected, by graph index
@@ -261,7 +263,7 @@
 		
 		if (nodesWrap == false){
 			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
-			//console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
+			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		}
 		else{
 			//draw dotted line toward the edge of the graph to indicate 
@@ -436,11 +438,11 @@
 		for (var s = 0; s < highlighted.length; s++){
 			curName = highlighted[s][2];
 			if (chordName == curName){
-				removeChordFromStack(s, true);
+				removeChordFromStack(s, true, false);
 			}
 		}
 	}
-	function removeChordFromStack(index, isHighlighted){
+	function removeChordFromStack(index, isHighlighted, doAuxFunctions){
 		var array;
 		if (isHighlighted){
 			array = highlighted;
@@ -465,9 +467,12 @@
 		if (isHighlighted) arrayName = "_highlighted_";
 		console.log("removing node (" + arrayX + "," + arrayY + ") from array " + arrayName);
 		array.splice(index, 1);
-		if (!isHighlighted){
+		if (doAuxFunctions){
 			removeIdenticalNodes(arrayChordName);
+			console.log("popping from the paths stack");
+			removePathFromStack(paths.length - 1);
 		}
+
 	}
 	function addChordToStack(curNodeX, curNodeY, isHighlighted, computePath){
 		var array;
@@ -536,7 +541,7 @@
 				if (selectedIndex != -1){
 					var highlightX = selected[selectedIndex][0];
 					var highlightY = selected[selectedIndex][1];
-					removeChordFromStack(selectedIndex);
+					removeChordFromStack(selectedIndex, false, false);
 					console.log("highlighting (" + highlightX + "," + highlightY + ")");
 					addChordToStack(highlightX, highlightY, true, false);
 				}
@@ -554,9 +559,6 @@
 	function addPathToStack(chordList){
 		var curChord = chordList[0], prevChord = 0;
 		//format of tuple is from the comments at top
-		curChordX = curChord[0];
-		curChordY = curChord[1];
-		curChordName = curChord[2];
 		for (var crd = 0; crd < chordList.length; crd++){
 			prevChord = curChord;
 			if (crd == 0) continue;
@@ -574,8 +576,33 @@
 			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
 		}
 		checkPathDestination(chordList[chordList.length - 1], chordList[0]);
+		paths.push(chordList);
 	}
-	//function removePathFromStack
+	function removePathFromStack(index){
+		var curPath = paths[index];
+		var curTuple = curPath[0];
+		var clearLineWidth = 10;
+
+		for (var t = 0; t < curPath.length; t++){
+			prevTuple = curTuple;
+			if (t == 0) continue;
+			curTuple = curPath[t];
+			curChordX = curTuple[0];
+			curChordY = curTuple[1];
+			curChordName = curTuple[2];
+
+			prevChordX = prevTuple[0];
+			prevChordY = prevTuple[1];
+			prevChordName = prevTuple[2];
+			drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, clearLineWidth, defaultBackgroundColor);
+			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, clearLineWidth, defaultBackgroundColor);
+
+			drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, defaultLineWidth, defaultArrowColor);
+			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, defaultLineWidth, defaultArrowColor);
+		}
+
+		paths.splice(index, 1);
+	}
 	function getHexFromColorName(colorName){
 		var colorHex = "";
 		switch(colorName){
@@ -623,19 +650,26 @@
 		{
 			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
 			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+			var curChordName = chords[i].getAttribute("chordName");
 			var circleCenterXLoc = circleXUnit * curNodeX + gridMargin;
 			var circleCenterYLoc = circleYUnit * curNodeY + gridMargin;
 	        if (inCircle(circleCenterXLoc, circleCenterYLoc, circleRadius, x, y)){
 				var ctx=c.getContext("2d");
 				console.log("in circle for graph index: (" + curNodeX + "," + curNodeY + ")");
 				selectedNumber = isSelected(curNodeX, curNodeY);
-				if (selectedNumber != -1){
+				//you can only remove the last chord in the path
+				if (selectedNumber != -1 && selectedNumber == selected.length - 1) {
 					console.log("found selected circle " + selectedNumber);
-					removeChordFromStack(selectedNumber)
+					removeChordFromStack(selectedNumber, false, true);
 				}
-				else{
-					console.log("circle not highlighted yet");
-					addChordToStack(curNodeX, curNodeY, false, true);	
+				//not a redundant conditional...
+				else if (selectedNumber == -1){//&& (curchordName != lastSelectedChordName)
+					//check that you're not selecting an identical chord to the last selected chord.
+					selectedByName = isSelectedByNameReverse(curChordName);
+					if (selectedByName == -1 || selectedByName != selected.length - 1){
+						console.log("circle not selected, and not equivalent to last selected, adding");
+						addChordToStack(curNodeX, curNodeY, false, true);	
+					}
 				}
 	        }
 		}	
