@@ -5,7 +5,7 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery-ui-1.10.1.custom.min.js"></script>
 <body>
-<canvas id='myCanvas' width='1000' height='750' style="border:1px solid #d3d3d3;">
+<canvas id='myCanvas' width='1000' height='750' >
 	Canvas not supported
 </canvas>
 <br/>
@@ -105,15 +105,17 @@
 	var defaultArrowColor = "black";
 	var defaultFillColor = "white";
 	var chordPathWidth = 5;
-	var chordPathColor	= "dark blue";
+	var chordPathColor	= "green";
 
 	var selectedLineWidth = 4;
 	var selectedLineColor = "blue";
 	var selectedFillColor = "light blue";
+	var selectedTextColor = "black";
 
 	var highlightedLineWidth = 4;
-	var highlightedLineColor = "blue";
-	var highlightedFillColor = "light blue";
+	var highlightedLineColor = "red";
+	var highlightedFillColor = "light red";
+	var highlightedTextColor = "black";
 
 	var firstTime = true;
 	var gridMargin = 100; 
@@ -125,7 +127,11 @@
 	//Each highlighted chord has the same tuple format as above.
 	//These are used to highlight other chords in the graph that are of identical name to the selected chords
 	//It is also used when the user locks down a path, and wants to create another
-	highlightedChords = [];
+	highlighted = [];
+	//Gotta keep track of the paths that are highlighted as well
+	//Each path entry has a list of [x, y, name] tuples, denoting each chord it visits
+	paths = [];
+
 	var highlightedX1 = -1;
 	var highlightedY1 = -1;
 	var highlightedChordName1 = "";
@@ -165,7 +171,7 @@
 	}
 
 	function drawCircle(xCenter, yCenter, radius, lineWidth, lineColor, fillColor){
-		console.log("drawing circle with color/width: (" + lineColor + "," + lineWidth + ")");
+		//console.log("drawing circle with color/width: (" + lineColor + "," + lineWidth + ")");
 		var c=document.getElementById("myCanvas");
 		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
@@ -255,7 +261,7 @@
 		
 		if (nodesWrap == false){
 			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
-			console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
+			//console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		}
 		else{
 			//draw dotted line toward the edge of the graph to indicate 
@@ -357,63 +363,37 @@
 		url += $("#UTT2_switch").val() + "/";
 		url += $("#UTT2_Major").val() + "/";
 		url += $("#UTT2_Minor").val() + "/";
-		/*pitches1 = getNodePitchesByIndex(x1, y1);
-		pitches2 = getNodePitchesByIndex(x2, y2);
-		for (var m = 0; m < pitches1.length; m++){
-			url += pitches1[m] +"/";
-		}
-		for (var m = 0; m < pitches1.length; m++){
-			url += pitches2[m] +"/";
-		}*/
-		url += x1 + "/";
-		url += y1 + "/";
-		url += x2 + "/";
-		url += y2 + "/";
+		url += new String(x1) + "/";
+		url += new String(y1) + "/";
+		url += new String(x2) + "/";
+		url += new String(y2) + "/";
 		$.get( url, function( data ) {
 			parser=new DOMParser();
   			pathXml=parser.parseFromString(data,"text/xml");
   			chordsInPath=pathXml.getElementsByTagName("ChordNode");
-  			var curChord = chordsInPath[0], prevChord = 0;
+  			//set the first chord, since we have to iterate in pairs
+  			var curChord;
+  			curPath = [];
   			for (var crd = 0; crd < chordsInPath.length; crd++){
-  				prevChord = curChord;
-  				if (crd == 0) continue;
   				curChord = chordsInPath[crd];
   				curChordX = parseInt(curChord.getAttribute("xIndex"));
   				curChordY = parseInt(curChord.getAttribute("yIndex"));
   				curChordName = curChord.getAttribute("chordName");
-  				prevChordX = parseInt(prevChord.getAttribute("xIndex"));
-  				prevChordY = parseInt(prevChord.getAttribute("yIndex"));
-  				prevChordName = prevChord.getAttribute("chordName");
-  				console.log("drawing arrow from chord [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "] to [" + curChordX + ", " + curChordY + ", " + curChordName + "]" );
-  				drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+  				curPath.push([curChordX, curChordY, curChordName]);
   			}
+  			addPathToStack(curPath);
 		});
 	}
 	function inCircle(center_x, center_y, radius, x, y){
     	dist = Math.sqrt(Math.pow((center_x - x), 2) + Math.pow((center_y - y), 2));
     	return (dist <= radius);
 	}
-	/*function isHighlighted(curX, curY){
-		var retVal = -1;
-		for (var h = 0; h < selected.length; h++){
-			var highlightedX = highlighted[h][0];
-			var highlightedY = highlighted[h][1];
-			var highlightedName = highlighted[h][2];
-			if (highlightedX == curX && highlightedY == curY){
-				retVal = h;
-			}
-			console.log("highlighted" + h + " is (" + highlightedX + "," + highlightedY + ")");
-		}
-		console.log("isHighlighted(" + curX + "," + curY + ") = " + retVal);
-		return retVal;
-	}*/
 	function isSelected(curX, curY){
 		var retVal = -1;
 		console.log("length of selected: " + selected.length);
 		for (var h = 0; h < selected.length; h++){
 			var selectedX = selected[h][0];
 			var selectedY = selected[h][1];
-			var selectedName = selected[h][2];
 			if (selectedX == curX && selectedY == curY){
 				retVal = h;
 			}
@@ -422,22 +402,94 @@
 		console.log("isSelected(" + curX + "," + curY + ") = " + retVal);
 		return retVal;
 	}
-	function removeSelectedChord(index){
+	//this function is a reverse iterator, for when we want the most recently selected node of a certain chord name
+	function isSelectedByNameReverse(chordName){
+		var retVal = -1;
+		console.log("length of selected: " + selected.length);
+		for (var h = selected.length - 1; h >= 0 ; h--){
+			var selectedName = selected[h][2];
+			if (selectedName == chordName){
+				retVal = h;
+			}
+		}
+		console.log("isSelected(" + chordName + ") = " + retVal);
+		return retVal;
+	}
+	function checkForIdenticalNodes(nodeIndexX, nodeIndexY, nodeName, doAdd){
+		chordNodes =curGraph.getElementsByTagName("ChordNode");
+		for (var k = 0; k < chordNodes.length; k++)
+		{
+			var curNodeName = chordNodes[k].getAttribute("chordName");
+			if (curNodeName == nodeName){
+				var curNodeIndexX = parseInt(chordNodes[k].getAttribute("xIndex"));
+				var curNodeIndexY = parseInt(chordNodes[k].getAttribute("yIndex"));
+				if (curNodeIndexX != nodeIndexX && curNodeIndexY != nodeIndexY){
+					//double check that it's not already selected
+					if (isSelected(curNodeIndexX, curNodeIndexY) == -1){
+						addChordToStack(curNodeIndexX, curNodeIndexY, true, false);
+					}
+				}
+			}
+		}
+	}
+	function removeIdenticalNodes(chordName){
+		for (var s = 0; s < highlighted.length; s++){
+			curName = highlighted[s][2];
+			if (chordName == curName){
+				removeChordFromStack(s, true);
+			}
+		}
+	}
+	function removeChordFromStack(index, isHighlighted){
+		var array;
+		if (isHighlighted){
+			array = highlighted;
+		}
+		else{
+			array = selected;
+		}
 		//this means we're de-selecting a circle, and it needs to be redrawn
-		selectedX = selected[index][0];
-		selectedY = selected[index][1];
-		selectedChordName = selected[index][2];
+		arrayX = array[index][0];
+		arrayY = array[index][1];
+		arrayChordName = array[index][2];
 
-		var circleCenterXLoc = circleXUnit * selectedX + gridMargin;
-		var circleCenterYLoc = circleYUnit * selectedY + gridMargin;
+		var circleCenterXLoc = circleXUnit * arrayX + gridMargin;
+		var circleCenterYLoc = circleYUnit * arrayY + gridMargin;
 		//clear first
 		clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
 		//rebuild
-		buildChordNode(selectedX, selectedY, selectedChordName, defaultLineWidth, defaultLineColor, defaultFillColor, defaultTextColor);
+		buildChordNode(arrayX, arrayY, arrayChordName, defaultLineWidth, defaultLineColor, defaultFillColor, defaultTextColor);
+		
 		//remove
-		selected.splice(index, 1);
+		var arrayName = "_selected_";
+		if (isHighlighted) arrayName = "_highlighted_";
+		console.log("removing node (" + arrayX + "," + arrayY + ") from array " + arrayName);
+		array.splice(index, 1);
+		if (!isHighlighted){
+			removeIdenticalNodes(arrayChordName);
+		}
 	}
-	function addSelectedChord(curNodeX, curNodeY, lineWidth, lineColor, fillColor){
+	function addChordToStack(curNodeX, curNodeY, isHighlighted, computePath){
+		var array;
+		var lineWidth;
+		var lineColor;
+		var fillColor;
+		var textColor;
+		if (isHighlighted){
+			array = highlighted;
+			lineWidth = highlightedLineWidth;
+			lineColor = highlightedLineColor;
+			fillColor = highlightedFillColor;
+			textColor = highlightedTextColor;
+		}
+		else{
+			array = selected;
+			lineWidth = selectedLineWidth;
+			lineColor = selectedLineColor;
+			fillColor = selectedFillColor;
+			textColor = selectedTextColor;
+		}
+
 		var curNodeName = getNodeNameByIndex(curNodeX, curNodeY);
 		var tuple = [];
 		tuple.push(curNodeX, curNodeY, curNodeName);
@@ -447,23 +499,83 @@
 
 		clearCircle(circleCenterXLoc, circleCenterYLoc, circleRadius);
 
-		buildChordNode(curNodeX, curNodeY, curNodeName, selectedLineWidth, selectedLineColor, selectedFillColor, defaultTextColor);
+		buildChordNode(curNodeX, curNodeY, curNodeName, lineWidth, lineColor, fillColor, textColor);
 		
 		//drawCircle(circleCenterXLoc, circleCenterYLoc, circleRadius - strokeDiff, selectedLineWidth, fillColor);
-		selected.push(tuple);
+		array.push(tuple);
 
 		//now get the path from the previously selected chord to this newly added chord, 
 		//if there are any other selected chords
-		if (selected.length > 1){
+		if (array.length > 1 && computePath){
 			console.log("getting best path");
 			//get the previously selected chord's indices
-			previousTuple = selected[selected.length - 2];
+			previousTuple = array[array.length - 2];
 			previousNodeX = previousTuple[0];
 			previousNodeY = previousTuple[1];
+			console.log("prevNode coordinates are: (" + previousNodeX + "," + previousNodeY + ")");
 			/*shortestPath = */getChordPath(previousNodeX, previousNodeY, curNodeX, curNodeY);
 			//drawChordPath(shortestPath);
 		}
+		if (computePath) checkForIdenticalNodes(curNodeX, curNodeY, curNodeName);
 	}
+	//this function checks if the last node in the path is part of the _selected_ array
+	//If not, it's part of _highlighted_, and you need to switch them
+	//returns false if the destination tuple is only highlighted(and was not the one selected)
+	function checkPathDestination(destTuple){
+		//search the highlighted array first, by name AND index
+		//if it's there, switch them. If not, you're good to go
+		name = 2;//index of the name in a tuple
+		for (var hl = 0; hl < highlighted.length; hl++){
+			if (destTuple[0] == highlighted[hl][0] && destTuple[1] == highlighted[hl][1] && destTuple[name] == highlighted[hl][name]){
+				//first, remove the highlighted chord we found (so we can later change it to selected)
+				removeChordFromStack(hl, true);
+
+				//change the selected chord that's the same as this chord to highlighted
+				//the selected chord will be at (or close to) the end of the selected stack
+				selectedIndex = isSelectedByNameReverse(destTuple[name]);
+				if (selectedIndex != -1){
+					var highlightX = selected[selectedIndex][0];
+					var highlightY = selected[selectedIndex][1];
+					removeChordFromStack(selectedIndex);
+					console.log("highlighting (" + highlightX + "," + highlightY + ")");
+					addChordToStack(highlightX, highlightY, true, false);
+				}
+				//now change the highlighted chord to selected 
+				//you have to do this second, otherwise you'll just pull this chord 
+				//when searching for the previously selected chord of same name
+				//similarly you have to remove it from the highlighted stack before
+				//adding the selected chord to the highlighted stack (see top, in scope)
+				addChordToStack(destTuple[0], destTuple[1], false, false);
+				break;
+			}
+		}
+
+	}
+	function addPathToStack(chordList){
+		var curChord = chordList[0], prevChord = 0;
+		//format of tuple is from the comments at top
+		curChordX = curChord[0];
+		curChordY = curChord[1];
+		curChordName = curChord[2];
+		for (var crd = 0; crd < chordList.length; crd++){
+			prevChord = curChord;
+			if (crd == 0) continue;
+
+			curChord = chordList[crd];
+			curChordX = curChord[0];
+			curChordY = curChord[1];
+			curChordName = curChord[2];
+
+			prevChordX = prevChord[0];
+			prevChordY = prevChord[1];
+			prevChordName = prevChord[2];
+
+			console.log("drawing arrow from chord [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "] to [" + curChordX + ", " + curChordY + ", " + curChordName + "]" );
+			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+		}
+		checkPathDestination(chordList[chordList.length - 1], chordList[0]);
+	}
+	//function removePathFromStack
 	function getHexFromColorName(colorName){
 		var colorHex = "";
 		switch(colorName){
@@ -495,7 +607,7 @@
 				colorHex = "#000000";
 				break;
 		}
-		console.log("returning '" + colorHex + "' for '" + colorName + "'");
+		//console.log("returning '" + colorHex + "' for '" + colorName + "'");
 		return colorHex;
 	}
 	function findCanvasClickLoc(event){
@@ -519,11 +631,11 @@
 				selectedNumber = isSelected(curNodeX, curNodeY);
 				if (selectedNumber != -1){
 					console.log("found selected circle " + selectedNumber);
-					removeSelectedChord(selectedNumber)
+					removeChordFromStack(selectedNumber)
 				}
 				else{
 					console.log("circle not highlighted yet");
-					addSelectedChord(curNodeX, curNodeY, selectedLineWidth, "blue", "blue");	
+					addChordToStack(curNodeX, curNodeY, false, true);	
 				}
 	        }
 		}	
@@ -566,12 +678,12 @@
 					var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
 					buildChordNode(curNodeX, curNodeY, chords[i].getAttribute("chordName"), defaultLineWidth, defaultLineColor, defaultFillColor, defaultTextColor);
 					chordNodeChildren = chords[i].childNodes;
-					console.log("chordNodeChildren.length = " + chordNodeChildren.length);
+					//console.log("chordNodeChildren.length = " + chordNodeChildren.length);
 					for (j = 0; j < chordNodeChildren.length; j++){
 						if (chordNodeChildren[j].tagName == "Neighbors"){
-							console.log("found the neighbors");
+							//console.log("found the neighbors");
 							neighborNodes = chordNodeChildren[j].childNodes;
-							console.log("neighborNodes.length = " + neighborNodes.length);
+							//console.log("neighborNodes.length = " + neighborNodes.length);
 							for (k = 0; k < neighborNodes.length; k++){
 								//gotta check for the neighbor tag because there are some blank text tags in between
 								if (neighborNodes[k].tagName == "Neighbor"){

@@ -48,6 +48,14 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, mode_2, major
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT2, UTT1, startChord)
 
+    print "(1,0) is " + chordToString(dGraph[1][0].chord) + ", with stored indices: (" + str(dGraph[1][0].xInd) + "," + str(dGraph[1][0].yInd) + ")"
+    print "(2,1) is " + chordToString(dGraph[2][1].chord) + ", .chordName='" + dGraph[2][1].chordName + "'"
+    print "(3,2) is " + chordToString(dGraph[3][2].chord) + ", .chordName='" + dGraph[3][2].chordName + "'"
+    print "(4,3) is " + chordToString(dGraph[4][3].chord) + ", .chordName='" + dGraph[4][3].chordName + "'"
+    print "(5,4) is " + chordToString(dGraph[5][4].chord) + ", .chordName='" + dGraph[5][4].chordName + "'"
+    print "(3,5) is " + chordToString(dGraph[3][5].chord) + ", .chordName='" + dGraph[3][5].chordName + "'"
+    print "input (" + x1 + "," + y1 + ") is " + chordToString(dGraph[int(x1)][int(y1)].chord)
+    print "input (" + x2 + "," + y2 + ") is " + chordToString(dGraph[int(x2)][int(y2)].chord)
     print "finding path from chord '" + dGraph[int(x1)][int(y1)].chordName + "' to '" + dGraph[int(x2)][int(y2)].chordName + "'"
     print "finding path from chord '" + chordToString(dGraph[int(x1)][int(y1)].chord) + "' to '" + chordToString(dGraph[int(x2)][int(y2)].chord) + "'"
     shortPath = shortestPath(dGraph, chordCompare, dGraph[int(x1)][int(y1)], dGraph[int(x2)][int(y2)].chord)
