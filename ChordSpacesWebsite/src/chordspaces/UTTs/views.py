@@ -9,8 +9,7 @@ from DijkstraShortestPath import shortestPath
 from Node2D import Node2DGraph
 
 
-
-def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2):
+def createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2):
     UTT1 = '(<'
     UTT1 += mode_1 + ','
     UTT1 += major_interval_1 + ','
@@ -23,6 +22,14 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2,
     UTT2 += minor_interval_2 + '>,'
     UTT2 += '1,' 
     UTT2 += name_2 + ')'
+    UTTs = []
+    UTTs.append(UTT1)
+    UTTs.append(UTT2)
+    return UTTs
+
+def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2):
+    [UTT1, UTT2] = createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2)
+    
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
     context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph)}
@@ -36,18 +43,7 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2,
 #I just passed the indices of the nodes that I want to search
 #There is a problem with that, which is that sometimes the shortest path points to a closer node
 def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, x1, y1, x2, y2):
-    UTT1 = '(<'
-    UTT1 += mode_1 + ','
-    UTT1 += major_interval_1 + ','
-    UTT1 += minor_interval_1 + '>,'
-    UTT1 += '1,' 
-    UTT1 += name_1 + ')'
-    UTT2 = '(<'
-    UTT2 += mode_2 + ','
-    UTT2 += major_interval_2 + ','
-    UTT2 += minor_interval_2 + '>,'
-    UTT2 += '1,' 
-    UTT2 += name_2 + ')'
+    [UTT1, UTT2] = createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2)
 
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
@@ -65,7 +61,17 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_
     #        print nodeY.chordName
     return render(request, 'UTTs/path.html', context)#UTT1 + ',' + UTT2
 
-#def addShortCut(request, mode_1, major_interval_1, minor_interval_1, mode_2, major_interval_2, minor_interval_2, x1, y1, x2, y2):
+def addShortCut(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, transString):
+    [UTT1, UTT2] = createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2)
+
+    startChord = chord.Chord([0,4,7])
+    uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
+    distanceDefault  = transString.count('|') + .9
+    transStripped = transString.replace("|", "")
+    addShortCut(dGraph, uttS, uttT, transString, distanceDefault, transStripped)
+    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph)}
+    print nodeGraph2DToString(dGraph)
+    return render(request, 'UTTs/graphxml.html', context)
 
 
 def index(request):

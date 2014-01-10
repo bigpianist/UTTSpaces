@@ -90,7 +90,7 @@
 	<div id="UTT2Disp"/>
 	</tr>
 	<input type="button" onclick="buildGraph()" value="Get Chord Graph"><br/>
-	<div id="lastTransformation"/><br/>
+	<input id="addShortcutButton" type="button" onClick="addShortcut()"/><div id="lastTransformation"/> <br/>
 	<div id="validDisp"/>
 </table>
 </body>
@@ -100,6 +100,7 @@
 			$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_mode").val() + ", " + $("#" + this.className + "_maj").val() + ", " + $("#" + this.className + "_min").val() + " >");
 		});
 		$(".UTT1 , .UTT2").trigger('change');
+		//$("#addShortcutButton").bind('click', addShortCut());
 	});
 	var curGraph = -1;
 	var circleRadius = 40;
@@ -261,10 +262,11 @@
 
 		console.log("isLeft is: " + String(isLeft));
 		console.log("isAbove is: " + String(isAbove));
-		var lineStartX = circleXUnit * nodeStartX + gridMargin + xDist;
-		var lineStartY = circleXUnit * nodeStartY + gridMargin + yDist;
-		var lineEndX = circleXUnit * nodeEndX + gridMargin + (xDist * -1);
-		var lineEndY = circleXUnit * nodeEndY + gridMargin + (yDist * -1);
+		var lineStartX = Math.floor(circleXUnit * nodeStartX + gridMargin + xDist);
+		var lineStartY = Math.floor(circleXUnit * nodeStartY + gridMargin + yDist);
+		var lineEndX = Math.floor(circleXUnit * nodeEndX + gridMargin + (xDist * -1));
+		var lineEndY = Math.floor(circleXUnit * nodeEndY + gridMargin + (yDist * -1));
+		console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .01);
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
@@ -341,6 +343,32 @@
 				break;
 			}
 			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
+		}
+	}
+	function drawShortCutsOnly(){
+		chords=curGraph.getElementsByTagName("ChordNode");
+		for (i = 0; i < chords.length; i++)
+		{
+			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
+			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
+			chordNodeChildren = chords[i].childNodes;
+			//console.log("chordNodeChildren.length = " + chordNodeChildren.length);
+			for (j = 0; j < chordNodeChildren.length; j++){
+				if (chordNodeChildren[j].tagName != "Neighbors") continue;
+				//console.log("found the neighbors");
+				neighborNodes = chordNodeChildren[j].childNodes;
+				//console.log("neighborNodes.length = " + neighborNodes.length);
+				for (k = 0; k < neighborNodes.length; k++){
+					//gotta check for the neighbor tag because there are some blank text tags in between
+					if (neighborNodes[k].tagName != "Neighbor") continue;
+					neighborX = parseInt(neighborNodes[k].getAttribute("xIndex"));
+					neighborY = parseInt(neighborNodes[k].getAttribute("yIndex"));
+					if ((Math.abs(neighborX - curNodeX) + Math.abs(neighborY - curNodeY)) > 1){
+						drawShortCutArrow(curNodeX, curNodeY, neighborX, neighborY, defaultArrowWidth, defaultArrowColor);
+					}
+					//console.log("found neighbor at: (" + neighborNodes[k].getAttribute("xIndex") + "," + neighborNodes[k].getAttribute("yIndex") + ")");
+				}				
+			}
 		}
 	}
 	function clearCanvas(){
@@ -580,6 +608,16 @@
 		}
 		if (computePath) checkForIdenticalNodes(curNodeX, curNodeY, curNodeName);
 	}
+	function printLastPath(){
+		console.log("printing last path: " + paths[paths.length - 1][1]);
+		if (paths.length > 0){
+			$('#lastTransformation').text(paths[paths.length - 1][1]);
+		}
+		else{
+			$('#lastTransformation').text("");
+		}
+
+	}
 	//this function checks if the last node in the path is part of the _selected_ array
 	//If not, it's part of _highlighted_, and you need to switch them
 	//returns false if the destination tuple is only highlighted(and was not the one selected)
@@ -615,7 +653,7 @@
 	}
 	function addPathToStack(pathEntry){
 		pathDistance = pathEntry[0];
-		pathTransString = pathEntry[1];
+		pathTrans = pathEntry[1];
 		pathChordList = pathEntry[2];
 		var curChord = pathChordList[0], prevChord = 0;
 		//format of tuple is from the comments at top
@@ -644,6 +682,7 @@
 		}
 		checkPathDestination(pathChordList[pathChordList.length - 1], pathChordList[0]);
 		paths.push(pathEntry);
+		printLastPath(pathTrans, pathDist);
 	}
 	function removePathFromStack(index){
 		var curPath = paths[index][2];
@@ -674,7 +713,38 @@
 
 		paths.splice(index, 1);
 	}
+	function getLastTransformation(){
+		text = document.getElementById('lastTransformation').textContent;
+		console.log("getting lastTrans: " + text);
+		if (text !== ""){
+			return text;
+		}
+		else{
+			return false;
+		}
+	}
 	function addShortcut(){
+		url = ""
+		var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
+		url += parentChordsTag[0].getAttribute("UTT1_mode") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_maj") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_min") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_name") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_mode") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_maj") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_min") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_name") + "/";
+		lastTrans = getLastTransformation();
+		if (lastTrans == true) {
+			url += lastTrans + "/";
+		}
+		$.get( url, function( data ) {
+			console.log("got the data back /addShortcut")
+			parser=new DOMParser();
+  			xmlDoc=parser.parseFromString(data,"text/xml");
+			curGraph = xmlDoc;
+			drawShortCutsOnly();
+		});
 
 	}
 	function getRGBaFromColorName(colorName, alpha){
@@ -787,8 +857,6 @@
 	  			xmlDoc=parser.parseFromString(data,"text/xml");
 	  			curGraph = xmlDoc;
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
-	  			chords=xmlDoc.getElementsByTagName("ChordNode");
-	  			console.log("chords.length is: " + chords.length);
 	  			var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
 	  			console.log("string attribute isValidGraph is: " + parentChordsTag[0].getAttribute("isValidGraph"));
 	  			console.log("string attribute isValidGraph.toLower is: " + parentChordsTag[0].getAttribute("isValidGraph").toLowerCase());
@@ -798,6 +866,8 @@
 	  			if (isValidGraph == false){
 	  				$('#validDisp').text(invalidText);
 	  			}
+	  			chords=xmlDoc.getElementsByTagName("ChordNode");
+	  			console.log("chords.length is: " + chords.length);
 				for (i = 0; i < chords.length; i++)
 				{
 					//console.log("current chord name: " + chords[i].getAttribute("chordName"));
@@ -828,6 +898,7 @@
 	  		else{//Internet Explorer
 	  			alert("Please upgrade to the 21st century and get a different browser");
 	  		}
+	  		drawArrowLine(5,7, 5, 0, 4, "black");
 			//buildChordNode({{colNode.xInd}}, {{colNode.yInd}}, "{{colNode.chordName}}");
 			//{% for n in colNode.neighbors %}
 			//drawArrowBetweenNodes({{colNode.xInd}}, {{colNode.yInd}}, {{n.0.0}}, {{n.0.1}});
