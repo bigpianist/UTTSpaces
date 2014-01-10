@@ -190,11 +190,11 @@
 		canvasCtx.closePath();
 
 		//fill
-		canvasCtx.fillStyle = getHexFromColorName(fillColor);
+		canvasCtx.fillStyle = getRGBaFromColorName(fillColor);
 		canvasCtx.fill()
 		//stroke
 		canvasCtx.lineWidth = lineWidth;
-		canvasCtx.strokeStyle = getHexFromColorName(lineColor);
+		canvasCtx.strokeStyle = getRGBaFromColorName(lineColor);
 		canvasCtx.stroke();
 	}
 	function writeChordText(canvasCtx, xLoc, yLoc, chordText, textColor){
@@ -209,14 +209,15 @@
 		canvasCtx.moveTo(xLocStart, yLocStart);
 
 	}
-	function drawArrowLine(xLocStart, yLocStart, xLocEnd, yLocEnd, lineWidth, lineColor){
+	function drawArrowLine(xLocStart, yLocStart, xLocEnd, yLocEnd, lineWidth, lineColor, alpha){
 		var c=document.getElementById("myCanvas");
 		var canvasCtx=c.getContext("2d");
 		canvasCtx.beginPath();
 		canvasCtx.moveTo(xLocStart, yLocStart);
 		canvasCtx.lineTo(xLocEnd, yLocEnd);
 		canvasCtx.lineWidth = lineWidth;
-		canvasCtx.strokeStyle = getHexFromColorName(lineColor);
+		alpha = typeof alpha !== 'undefined' ? alpha : 1;
+		canvasCtx.strokeStyle = getRGBaFromColorName(lineColor, alpha);
       	canvasCtx.stroke();
 	}
 	function drawArrowDashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd, lineWidth, lineColor){
@@ -224,8 +225,45 @@
 		var canvasCtx=c.getContext("2d");
 		canvasCtx.dashedLine(xLocStart, yLocStart, xLocEnd, yLocEnd, [10,10]);
 		//canvasCtx.lineWidth = lineWidth;
-		//canvasCtx.strokeStyle = getHexFromColorName(lineColor);
+		//canvasCtx.strokeStyle = getRGBaFromColorName(lineColor);
       	canvasCtx.stroke();
+	}
+	//when the nodes are not neighbors, you gotta make a translucent arc arrow to show that it's a shortcut
+	function drawShortCutArrow(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
+		//short cut arrows will come off the sides of the circle
+		//first, get the x and y distances for the corners of the circle
+		var cornerDist = Math.sqrt((circleRadius * circleRadius) / 2);
+		//these flags are describing the first node in terms of the 2nd (first node) isRight (of the second node)
+		var isLeft = false;
+		var isAbove = false;
+		if (nodeStartX <= nodeEndX){
+			isLeft = true;
+		}
+		if (nodeStartY <= nodeEndY){
+			isAbove = true;
+		}
+
+		if (isLeft){
+			xDist = cornerDist;
+		}
+		else{
+			xDist = cornerDist * -1;
+		}
+
+		if (isAbove){
+			yDist = cornerDist;
+		}
+		else{
+			yDist = cornerDist * -1;
+		}
+
+		console.log("isLeft is: " + String(isLeft));
+		console.log("isAbove is: " + String(isAbove));
+		var lineStartX = circleXUnit * nodeStartX + gridMargin + xDist;
+		var lineStartY = circleXUnit * nodeStartY + gridMargin + yDist;
+		var lineEndX = circleXUnit * nodeEndX + gridMargin + (xDist * -1);
+		var lineEndY = circleXUnit * nodeEndY + gridMargin + (yDist * -1);
+		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, highlightedLineColor, .01);
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
 		var circleRadiusX = circleRadius;
@@ -628,39 +666,41 @@
 
 		paths.splice(index, 1);
 	}
-	function getHexFromColorName(colorName){
-		var colorHex = "";
+	function getRGBaFromColorName(colorName, alpha){
+		alpha = typeof alpha !== 'undefined' ? alpha : 1;
+		var colorRGBa = "rgba";
 		switch(colorName){
 			case "dark blue":
-				colorHex = "#0c03aa";
+				colorRGBa += "(12, 3, 170, ";
 				break;
 			case "blue":
-				colorHex = "#007fff";
+				colorRGBa += "(0, 127, 255, ";
 				break;
 			case "light blue":
-				colorHex = "#cceaff";
+				colorRGBa += "(204, 234, 255, ";
 				break;
 			case "red":
-				colorHex = "#ff333e";
+				colorRGBa += "(255, 51, 62, ";
 				break;
 			case "light red":
-				colorHex = "#ffcccf";
+				colorRGBa += "(255, 204, 207, ";
 				break;
 			case "green":
-				colorHex = "#39c045";
+				colorRGBa += "(57, 192, 69, ";
 				break;
 			case "light green":
-				colorHex = "#bdea9f";
+				colorRGBa += "(189, 234, 159, ";
 				break;
 			case "white":
-				colorHex = "#ffffff";
+				colorRGBa += "(255, 255, 255, ";
 				break;
 			case "black":
-				colorHex = "#000000";
+				colorRGBa += "(0, 0, 0, ";
 				break;
 		}
-		//console.log("returning '" + colorHex + "' for '" + colorName + "'");
-		return colorHex;
+		colorRGBa += String(alpha) + ")";
+		console.log("returning '" + colorRGBa + "' for '" + colorName + "'");
+		return colorRGBa;
 	}
 	function findCanvasClickLoc(event){
 		var c=document.getElementById("myCanvas");
@@ -772,6 +812,7 @@
 						}
 						
 					}
+					drawShortCutArrow(2,3,4,5, defaultArrowWidth, defaultArrowColor);
 				}
 	  		}
 	  		else{//Internet Explorer
