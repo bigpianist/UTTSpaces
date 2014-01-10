@@ -56,9 +56,9 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_
     #print "finding path from chord '" + dGraph[int(x1)][int(y1)].chordName + "' to '" + dGraph[int(x2)][int(y2)].chordName + "'"
     #print "finding path from chord '" + chordToString(dGraph[int(x1)][int(y1)].chord) + "' to '" + chordToString(dGraph[int(x2)][int(y2)].chord) + "'"
     shortPath = shortestPath(dGraph, chordCompare, dGraph[int(x1)][int(y1)], dGraph[int(x2)][int(y2)].chord)
-    print getDistancesAndTransformationsFromPath(dGraph, shortPath)
+    distTransTuple = getDistancesAndTransformationsFromPath(dGraph, shortPath)
     #print [chordToString(i.chord) + ':'  for i in shortPath]
-    context = {'shortestPath': shortPath}
+    context = {'shortestPath': shortPath, 'distance': distTransTuple[0], 'transformations': distTransTuple[1]}
     #print nodeGraph2DToString(dGraph)
     #for nodeX in dGraph:
     #    for nodeY in nodeX:

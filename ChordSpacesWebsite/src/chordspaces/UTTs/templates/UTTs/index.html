@@ -90,6 +90,7 @@
 	<div id="UTT2Disp"/>
 	</tr>
 	<input type="button" onclick="buildGraph()" value="Get Chord Graph"><br/>
+	<div id="lastTransformation"/><br/>
 	<div id="validDisp"/>
 </table>
 </body>
@@ -140,7 +141,8 @@
 	//It is also used when the user locks down a path, and wants to create another
 	highlighted = [];
 	//Gotta keep track of the paths that are highlighted as well
-	//Each path entry has a list of [x, y, name] tuples, denoting each chord it visits
+	//Each path entry is a tuple [pathDistance, pathTransformationString, [chordList]] 
+	//where chordList is a list of [x, y, name] tuples, denoting each chord it visits
 	paths = [];
 
 	var highlightedX1 = -1;
@@ -263,7 +265,7 @@
 		var lineStartY = circleXUnit * nodeStartY + gridMargin + yDist;
 		var lineEndX = circleXUnit * nodeEndX + gridMargin + (xDist * -1);
 		var lineEndY = circleXUnit * nodeEndY + gridMargin + (yDist * -1);
-		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, highlightedLineColor, .01);
+		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .01);
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
 		var circleRadiusX = circleRadius;
@@ -435,7 +437,10 @@
   				curChordName = curChord.getAttribute("chordName");
   				curPath.push([curChordX, curChordY, curChordName]);
   			}
-  			addPathToStack(curPath);
+  			parentTag = pathXml.getElementsByTagName("Path");
+  			pathDist = parseFloat(parentTag[0].getAttribute("distance"));
+  			pathTrans = parentTag[0].getAttribute("transformations");
+  			addPathToStack([pathDist, pathTrans, curPath]);
 		});
 	}
 	function inCircle(center_x, center_y, radius, x, y){
@@ -608,14 +613,17 @@
 		}
 
 	}
-	function addPathToStack(chordList){
-		var curChord = chordList[0], prevChord = 0;
+	function addPathToStack(pathEntry){
+		pathDistance = pathEntry[0];
+		pathTransString = pathEntry[1];
+		pathChordList = pathEntry[2];
+		var curChord = pathChordList[0], prevChord = 0;
 		//format of tuple is from the comments at top
-		for (var crd = 0; crd < chordList.length; crd++){
+		for (var crd = 0; crd < pathChordList.length; crd++){
 			prevChord = curChord;
 			if (crd == 0) continue;
 
-			curChord = chordList[crd];
+			curChord = pathChordList[crd];
 			curChordX = curChord[0];
 			curChordY = curChord[1];
 			curChordName = curChord[2];
@@ -634,11 +642,11 @@
 			}
 
 		}
-		checkPathDestination(chordList[chordList.length - 1], chordList[0]);
-		paths.push(chordList);
+		checkPathDestination(pathChordList[pathChordList.length - 1], pathChordList[0]);
+		paths.push(pathEntry);
 	}
 	function removePathFromStack(index){
-		var curPath = paths[index];
+		var curPath = paths[index][2];
 		var curTuple = curPath[0];
 		var clearLineWidth = 10;
 
@@ -665,6 +673,9 @@
 		}
 
 		paths.splice(index, 1);
+	}
+	function addShortcut(){
+
 	}
 	function getRGBaFromColorName(colorName, alpha){
 		alpha = typeof alpha !== 'undefined' ? alpha : 1;
@@ -812,7 +823,6 @@
 						}
 						
 					}
-					drawShortCutArrow(2,3,4,5, defaultArrowWidth, defaultArrowColor);
 				}
 	  		}
 	  		else{//Internet Explorer

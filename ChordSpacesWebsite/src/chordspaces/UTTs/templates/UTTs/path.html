@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Chords>
+<Path distance="{{ distance }}" transformations="{{ transformations }}">
 {% for chordNode in shortestPath %}
 		<ChordNode chordName="{{chordNode.chordName}}" xIndex="{{chordNode.xInd}}" yIndex="{{chordNode.yInd}}">
 			<Pitches>
@@ -12,4 +12,4 @@
 			</Neighbors>
 		</ChordNode>
 {% endfor %}
-</Chords>
+</Path>
