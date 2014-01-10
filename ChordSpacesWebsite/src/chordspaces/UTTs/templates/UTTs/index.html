@@ -12,12 +12,13 @@
 <table>
 	First transformation: 
 	<tr>
-	<select id="UTT1_switch" class="UTT1">
+	<select id="UTT1_mode" class="UTT1">
 	  <option value="+" selected="selected">+</option>
 	  <option value="-">-</option>
 	</select>
 		
-	<select id="UTT1_Major" class="UTT1">
+	<select id="UTT1_maj" class="UTT1">
+	  <option value="1">0</option>
 	  <option value="1">1</option>
 	  <option value="2" selected="selected">2</option>
 	  <option value="3">3</option>
@@ -31,7 +32,8 @@
 	  <option value="11">11</option>
 	</select>
 
-	<select id="UTT1_Minor" class="UTT1">
+	<select id="UTT1_min" class="UTT1">
+	  <option value="1">0</option>
 	  <option value="1">1</option>
 	  <option value="2" selected="selected">2</option>
 	  <option value="3">3</option>
@@ -44,16 +46,19 @@
 	  <option value="10">10</option>
 	  <option value="11">11</option>
 	</select>
+
+	Transformation ID: <input type="text" id="UTT1_Name" size="1" maxLength="1" value="X"/>
 	<div id="UTT1Disp"/>
 	</tr>
 	<br/>
 	Second transformation: <tr>
-	<select id="UTT2_switch" class="UTT2">
+	<select id="UTT2_mode" class="UTT2">
 	  <option value="+">+</option>
 	  <option value="-" selected="selected">-</option>
 	</select>
 		
-	<select id="UTT2_Major" class="UTT2">
+	<select id="UTT2_maj" class="UTT2">
+	  <option value="1">0</option>
 	  <option value="1">1</option>
 	  <option value="2">2</option>
 	  <option value="3">3</option>
@@ -67,7 +72,8 @@
 	  <option value="11">11</option>
 	</select>
 
-	<select id="UTT2_Minor" class="UTT2">
+	<select id="UTT2_min" class="UTT2">
+	  <option value="1">0</option>	
 	  <option value="1">1</option>
 	  <option value="2">2</option>
 	  <option value="3">3</option>
@@ -80,15 +86,17 @@
 	  <option value="10">10</option>
 	  <option value="11">11</option>
 	</select>
+	Transformation ID: <input type="text" id="UTT2_Name" size="1" maxLength="1" value="Y"/>
 	<div id="UTT2Disp"/>
 	</tr>
-	<input type="button" onclick="buildGraph()" value="Get Chord Graph">
+	<input type="button" onclick="buildGraph()" value="Get Chord Graph"><br/>
+	<div id="validDisp"/>
 </table>
 </body>
 <script type="text/javascript">
 	$(document).ready(function(){
 		$(".UTT1 , .UTT2").bind('change',function(){
-			$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_switch").val() + ", " + $("#" + this.className + "_Major").val() + ", " + $("#" + this.className + "_Minor").val() + " >");
+			$("#" + this.className + "Disp").text("< " + $("#" + this.className + "_mode").val() + ", " + $("#" + this.className + "_maj").val() + ", " + $("#" + this.className + "_min").val() + " >");
 		});
 		$(".UTT1 , .UTT2").trigger('change');
 	});
@@ -119,6 +127,7 @@
 
 	var defaultBackgroundColor = "white";
 
+	var invalidText = "The graph produced does not contain all 24 major and minor triads";
 	var firstTime = true;
 	var gridMargin = 100; 
 	//Gotta keep track of which chords/circles are currently selected, by graph index
@@ -359,12 +368,17 @@
 	//x and y pairs are the indices for the nodes in the graph
 	function getChordPath(x1, y1, x2, y2){
 		var url = "";
-		url += $("#UTT1_switch").val() + "/";
-		url += $("#UTT1_Major").val() + "/";
-		url += $("#UTT1_Minor").val() + "/";
-		url += $("#UTT2_switch").val() + "/";
-		url += $("#UTT2_Major").val() + "/";
-		url += $("#UTT2_Minor").val() + "/";
+		//get the UTT from the stored xml, not from the form
+		//since they're interacting with the already-made graph
+	  	var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
+		url += parentChordsTag[0].getAttribute("UTT1_mode") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_maj") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_min") + "/";
+		url += parentChordsTag[0].getAttribute("UTT1_name") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_mode") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_maj") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_min") + "/";
+		url += parentChordsTag[0].getAttribute("UTT2_name") + "/";
 		url += new String(x1) + "/";
 		url += new String(y1) + "/";
 		url += new String(x2) + "/";
@@ -574,6 +588,13 @@
 
 			console.log("drawing arrow from chord [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "] to [" + curChordX + ", " + curChordY + ", " + curChordName + "]" );
 			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+
+			if (Math.abs(prevChordY - curChordY) > 1 || Math.abs(prevChordX - curChordX) > 1){
+				//assumes no arrow heads
+				//this means that the nodes wrap
+				drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, chordPathWidth, chordPathColor);
+			}
+
 		}
 		checkPathDestination(chordList[chordList.length - 1], chordList[0]);
 		paths.push(chordList);
@@ -594,11 +615,15 @@
 			prevChordX = prevTuple[0];
 			prevChordY = prevTuple[1];
 			prevChordName = prevTuple[2];
+			//to clear a line, simply draw a line of the background color of sufficient width
+			//we do both directions because this function automatically handles the wrapping case,
+			//in which case the two directional arrows are in different locations
 			drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, clearLineWidth, defaultBackgroundColor);
 			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, clearLineWidth, defaultBackgroundColor);
 
-			drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, defaultLineWidth, defaultArrowColor);
-			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, defaultLineWidth, defaultArrowColor);
+			//redraw regular arrows
+			drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, defaultArrowWidth, defaultArrowColor);
+			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, defaultArrowWidth, defaultArrowColor);
 		}
 
 		paths.splice(index, 1);
@@ -686,12 +711,22 @@
 	}
 	function buildGraph(){
 		var url = "";
-		url += $("#UTT1_switch").val() + "/";
-		url += $("#UTT1_Major").val() + "/";
-		url += $("#UTT1_Minor").val() + "/";
-		url += $("#UTT2_switch").val() + "/";
-		url += $("#UTT2_Major").val() + "/";
-		url += $("#UTT2_Minor").val() + "/";
+		url += $("#UTT1_mode").val() + "/";
+		url += $("#UTT1_maj").val() + "/";
+		url += $("#UTT1_min").val() + "/";
+		var trans1Name = $("#UTT1_Name").val();
+		if (trans1Name == ""){
+			trans1Name = "X";
+		}
+		url += trans1Name + "/";
+		url += $("#UTT2_mode").val() + "/";
+		url += $("#UTT2_maj").val() + "/";
+		url += $("#UTT2_min").val() + "/";
+		var trans2Name = $("#UTT2_Name").val();
+		if (trans2Name == ""){
+			trans2Name = "Y";
+		}
+		url += trans2Name + "/";
 		clearCanvas();
 		selected = [];
 		highlighted = [];
@@ -703,6 +738,15 @@
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
 	  			chords=xmlDoc.getElementsByTagName("ChordNode");
 	  			console.log("chords.length is: " + chords.length);
+	  			var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
+	  			console.log("string attribute isValidGraph is: " + parentChordsTag[0].getAttribute("isValidGraph"));
+	  			console.log("string attribute isValidGraph.toLower is: " + parentChordsTag[0].getAttribute("isValidGraph").toLowerCase());
+	  			isValidGraph = ('true' === parentChordsTag[0].getAttribute("isValidGraph").toLowerCase());
+	  			console.log("isValidGraph is : " + String(isValidGraph));
+	  			$('#validDisp').text("")
+	  			if (isValidGraph == false){
+	  				$('#validDisp').text(invalidText);
+	  			}
 				for (i = 0; i < chords.length; i++)
 				{
 					//console.log("current chord name: " + chords[i].getAttribute("chordName"));
