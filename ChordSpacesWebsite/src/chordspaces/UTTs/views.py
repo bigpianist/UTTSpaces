@@ -32,7 +32,10 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2,
     
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
-    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph)}
+
+    yMax = len(dGraph[0]) - 1
+    xMax = len(dGraph) - 1
+    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph), 'xMax': xMax, 'yMax': yMax}
     print nodeGraph2DToString(dGraph)
     #for nodeX in dGraph:
     #    for nodeY in nodeX:
@@ -61,15 +64,19 @@ def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_
     #        print nodeY.chordName
     return render(request, 'UTTs/path.html', context)#UTT1 + ',' + UTT2
 
-def addShortCut(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, transString):
+def GraphWithShortcut(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, transString):
     [UTT1, UTT2] = createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2)
-
+    print "adding shortcut"
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
     distanceDefault  = transString.count('|') + .9
-    transStripped = transString.replace("|", "")
-    addShortCut(dGraph, uttS, uttT, transString, distanceDefault, transStripped)
-    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph)}
+    transReplaced = transString.replace(".", "|")
+    print "inputting this into addShortcut: " + transReplaced
+    addShortcut(dGraph, transReplaced, distanceDefault, transReplaced)
+    yMax = len(dGraph[0]) - 1
+    xMax = len(dGraph) - 1
+    print "xMax is: " + str(xMax) +", yMax is: " + str(yMax)
+    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph), 'xMax': xMax, 'yMax': yMax}
     print nodeGraph2DToString(dGraph)
     return render(request, 'UTTs/graphxml.html', context)
 

@@ -260,14 +260,14 @@
 			yDist = cornerDist * -1;
 		}
 
-		console.log("isLeft is: " + String(isLeft));
-		console.log("isAbove is: " + String(isAbove));
+		//console.log("isLeft is: " + String(isLeft));
+		//console.log("isAbove is: " + String(isAbove));
 		var lineStartX = Math.floor(circleXUnit * nodeStartX + gridMargin + xDist);
 		var lineStartY = Math.floor(circleXUnit * nodeStartY + gridMargin + yDist);
 		var lineEndX = Math.floor(circleXUnit * nodeEndX + gridMargin + (xDist * -1));
 		var lineEndY = Math.floor(circleXUnit * nodeEndY + gridMargin + (yDist * -1));
-		console.log("drawing arrow from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
-		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .01);
+		console.log("drawing shortcut from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
+		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .2);
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
 		var circleRadiusX = circleRadius;
@@ -345,6 +345,23 @@
 			drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor);
 		}
 	}
+	//this function tells if nodes are right next two eachother, except that they wrap around the edge of the graph
+	function nodesAreAdjacentWithWrap(curNodeX, curNodeY, neighborX, neighborY, xMax, yMax){
+		var retVal = false;
+		if (neighborX == curNodeX){
+			if (curNodeY == yMax && neighborY == 0 || curNodeY == 0 && neighborY == yMax){
+				//this is not a shortcut, it's a wrap-around
+				retVal = true;
+			}
+		}
+		if (neighborY == curNodeY){
+			if (curNodeX == xMax && neighborX == 0 || curNodeX == 0 && neighborX == xMax){
+				//this is not a shortcut, it's a wrap-around
+				retVal = true;
+			}
+		}
+		return retVal;
+	}
 	function drawShortCutsOnly(){
 		chords=curGraph.getElementsByTagName("ChordNode");
 		for (i = 0; i < chords.length; i++)
@@ -352,18 +369,28 @@
 			var curNodeX = parseInt(chords[i].getAttribute("xIndex"));
 			var curNodeY = parseInt(chords[i].getAttribute("yIndex"));
 			chordNodeChildren = chords[i].childNodes;
-			//console.log("chordNodeChildren.length = " + chordNodeChildren.length);
+
+	  		var parentChordsTag = curGraph.getElementsByTagName("Chords");
+	  		xMax = parentChordsTag[0].getAttribute("xMax");
+	  		yMax = parentChordsTag[0].getAttribute("yMax");
+			console.log("finding shortcuts for ("  + curNodeX +  "," + curNodeY + ")");
 			for (j = 0; j < chordNodeChildren.length; j++){
 				if (chordNodeChildren[j].tagName != "Neighbors") continue;
 				//console.log("found the neighbors");
 				neighborNodes = chordNodeChildren[j].childNodes;
-				//console.log("neighborNodes.length = " + neighborNodes.length);
+				console.log("neighborNodes.length = " + neighborNodes.length);
 				for (k = 0; k < neighborNodes.length; k++){
 					//gotta check for the neighbor tag because there are some blank text tags in between
 					if (neighborNodes[k].tagName != "Neighbor") continue;
 					neighborX = parseInt(neighborNodes[k].getAttribute("xIndex"));
 					neighborY = parseInt(neighborNodes[k].getAttribute("yIndex"));
+					distanceString = neighborNodes[k].getAttribute("distance");
+					//identify adjacent wrapping nodes- those are not shortcuts:
+					console.log("found neighbor at (" + neighborX +  "," + neighborY +  "," + distanceString + ")");
+					if (nodesAreAdjacentWithWrap(curNodeX, curNodeY, neighborX, neighborY, xMax, yMax)) continue;
+
 					if ((Math.abs(neighborX - curNodeX) + Math.abs(neighborY - curNodeY)) > 1){
+						console.log("found shortcut at (" + neighborX +  "," + neighborY + ")");
 						drawShortCutArrow(curNodeX, curNodeY, neighborX, neighborY, defaultArrowWidth, defaultArrowColor);
 					}
 					//console.log("found neighbor at: (" + neighborNodes[k].getAttribute("xIndex") + "," + neighborNodes[k].getAttribute("yIndex") + ")");
@@ -735,8 +762,11 @@
 		url += parentChordsTag[0].getAttribute("UTT2_min") + "/";
 		url += parentChordsTag[0].getAttribute("UTT2_name") + "/";
 		lastTrans = getLastTransformation();
-		if (lastTrans == true) {
-			url += lastTrans + "/";
+		console.log("trying to add shortcut, lastTrans is: " + lastTrans);
+
+		if (lastTrans !== 'undefined') {
+			console.log("lastTrans is true, adding it to url")
+			url += lastTrans.replace(/\|/g, ".") + "/";
 		}
 		$.get( url, function( data ) {
 			console.log("got the data back /addShortcut")
@@ -780,7 +810,7 @@
 				break;
 		}
 		colorRGBa += String(alpha) + ")";
-		console.log("returning '" + colorRGBa + "' for '" + colorName + "'");
+		//console.log("returning '" + colorRGBa + "' for '" + colorName + "'");
 		return colorRGBa;
 	}
 	function findCanvasClickLoc(event){
@@ -858,10 +888,9 @@
 	  			curGraph = xmlDoc;
 	  			//alert(xmlDoc.getElementsByTagName("chordNode"));//[0].childNodes[0].nodeValue;
 	  			var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
-	  			console.log("string attribute isValidGraph is: " + parentChordsTag[0].getAttribute("isValidGraph"));
-	  			console.log("string attribute isValidGraph.toLower is: " + parentChordsTag[0].getAttribute("isValidGraph").toLowerCase());
+	  			
 	  			isValidGraph = ('true' === parentChordsTag[0].getAttribute("isValidGraph").toLowerCase());
-	  			console.log("isValidGraph is : " + String(isValidGraph));
+	  			//console.log("isValidGraph is : " + String(isValidGraph));
 	  			$('#validDisp').text("")
 	  			if (isValidGraph == false){
 	  				$('#validDisp').text(invalidText);
@@ -882,7 +911,7 @@
 						if (chordNodeChildren[j].tagName == "Neighbors"){
 							//console.log("found the neighbors");
 							neighborNodes = chordNodeChildren[j].childNodes;
-							//console.log("neighborNodes.length = " + neighborNodes.length);
+							console.log("neighborNodes.length = " + neighborNodes.length);
 							for (k = 0; k < neighborNodes.length; k++){
 								//gotta check for the neighbor tag because there are some blank text tags in between
 								if (neighborNodes[k].tagName == "Neighbor"){
