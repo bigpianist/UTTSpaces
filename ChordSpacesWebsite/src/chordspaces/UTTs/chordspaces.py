@@ -72,8 +72,8 @@ class UTT:
 		#print 'extra stuff: (' + str(dist) +',' + ident +')'
 		return UTT(switch, int(splitUTT[1]), int(splitUTT[2]), dist, ident)
 
-	def computeSpaceAndDistance(self, startTriad):
-		self.space = self.allPossibleTransformationsFromTriad(startTriad)
+	def computeSpaceAndDistance(self, startTriad, reverse):
+		self.space = self.allPossibleTransformationsFromTriad(startTriad, reverse)
 
 	def transform(self, chordIn):
 		#print 'transforming ' + chordIn.pitches[0].name + ' ' + chordIn.commonName
@@ -131,7 +131,7 @@ class UTT:
 		#print 'distWrap: ' + str(distWrap)
 		return min([dist1,dist2,distWrap])
 
-	def allPossibleTransformationsFromTriad(self, triad):
+	def allPossibleTransformationsFromTriad(self, triad, reverse):
 		chordList = []
 		looped = False
 		#print 'creating space from starting triad: ' + chordToString(triad)
@@ -142,7 +142,10 @@ class UTT:
 					looped = True
 			if looped: 
 				break
-			chordList.append(triad)
+			if (reverse):
+				chordList.insert(0, triad)
+			else:
+				chordList.append(triad)
 			triad = self.transform(triad)
 		return chordList
 
@@ -188,7 +191,7 @@ def make2DNodeGraph(UTT1, UTT2, stripInverse = False):
 	for x in range(len(UTT1.space)):
 		#if compareChord(iterChord, startChord):
 		#print 'creating row space from: ' + chordToString(UTT1.space[x])
-		colSpace = UTT2.allPossibleTransformationsFromTriad(UTT1.space[x])
+		colSpace = UTT2.allPossibleTransformationsFromTriad(UTT1.space[x], True)
 		#print 'created column space: ' + str(colSpace)
 		dGraph.insert(0,[])
 		for y, colChord in enumerate(colSpace):
@@ -202,23 +205,23 @@ def make2DNodeGraph(UTT1, UTT2, stripInverse = False):
 				#print 'dGraph.len = ' + str(len(dGraph))
 				#print 'dGraph[1].len = ' + str(len(dGraph[1]))
 				#print 'column space is: ' + str(colSpace)
-				makeNeighbors(dGraph[1][y], newNode, UTT1.distanceUnit, UTT1.identifier, stripInverse)
+				makeNeighbors(newNode, dGraph[1][y], UTT1.distanceUnit, UTT1.identifier, stripInverse)
 				#newNode.addNeighbor(dGraph[x-1][y], UTT1.distanceUnit)
 				#dGraph[x-1][y].addNeighbor(newNode, UTT1.distanceUnit)
 				#if chordCompare(dGraph[1][y].chord, newNode.chord):
 					#print 'adding edge for identical chord at colSpace[index - 1], colSpace[index], index = ' + str(index)
 			if x == len(UTT1.space) - 1:
-				makeNeighbors(newNode, dGraph[-1][y], UTT1.distanceUnit, UTT1.identifier, stripInverse)
+				makeNeighbors(dGraph[-1][y], newNode, UTT1.distanceUnit, UTT1.identifier, stripInverse)
 			if y > 0:
 				if chordCompare(newNode.chord, dGraph[0][y - 1].chord):
 					print 'adding edge for identical chord at colSpace[index], prevColSpace[index], index = ' + str(index)
-				makeNeighbors(dGraph[0][y-1], newNode, UTT2.distanceUnit, UTT2.identifier, stripInverse)
+				makeNeighbors(newNode, dGraph[0][y-1], UTT2.distanceUnit, UTT2.identifier, stripInverse)
 				#newNode.addNeighbor(dGraph[x][y - 1], UTT2.distanceUnit)
 				#dGraph[x][y - 1].addNeighbor(newNode, UTT2.distanceUnit)
 
 		if chordCompare(colSpace[-1], colSpace[0]):
 			print 'adding edge for identical chord at colSpace[-1], colSpace[0]'
-		makeNeighbors(dGraph[0][-1],dGraph[0][0], UTT2.distanceUnit, UTT2.identifier, stripInverse)
+		makeNeighbors(dGraph[0][0], dGraph[0][-1], UTT2.distanceUnit, UTT2.identifier, stripInverse)
 		#G.add_edge(colSpace[-1], colSpace[0])
 		#prevColSpace = colSpace
 	return dGraph
@@ -259,8 +262,8 @@ def nodeGraph2DToString(graph):
 def createUTTSpaceFromStringsAndStartChord(sUTT1, sUTT2, startChord, stripInverse = False):
 	UTT1 = UTT.fromS(sUTT1)
 	UTT2 = UTT.fromS(sUTT2)
-	UTT1.computeSpaceAndDistance(startChord)
-	UTT2.computeSpaceAndDistance(startChord)
+	UTT1.computeSpaceAndDistance(startChord, True)
+	UTT2.computeSpaceAndDistance(startChord, True)
 	return (UTT1, UTT2, make2DNodeGraph(UTT1, UTT2, stripInverse))
 
 #add edges for every node in your graph between two nodes whose path between 

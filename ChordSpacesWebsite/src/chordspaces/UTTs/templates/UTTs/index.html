@@ -238,12 +238,20 @@
 		var cornerDist = Math.sqrt((circleRadius * circleRadius) / 2);
 		//these flags are describing the first node in terms of the 2nd (first node) isRight (of the second node)
 		var isLeft = false;
+		var isSameX = false;
 		var isAbove = false;
-		if (nodeStartX <= nodeEndX){
+		var isSameY = false;
+		if (nodeStartX < nodeEndX){
 			isLeft = true;
+		}
+		if (nodeStartX == nodeEndX){
+			isSameX = true;
 		}
 		if (nodeStartY <= nodeEndY){
 			isAbove = true;
+		}
+		if (nodeStartY == nodeEndY){
+			isSameY = true;
 		}
 
 		if (isLeft){
@@ -267,8 +275,12 @@
 		if (nodesDoWrap) return;
 		var lineStartX = Math.floor(circleXUnit * nodeStartX + gridMargin + xDist);
 		var lineStartY = Math.floor(circleXUnit * nodeStartY + gridMargin + yDist);
-		var lineEndX = Math.floor(circleXUnit * nodeEndX + gridMargin + (xDist * -1));
-		var lineEndY = Math.floor(circleXUnit * nodeEndY + gridMargin + (yDist * -1));
+		xMult = -1;
+		yMult = -1;
+		if (isSameX) xMult = 1;
+		if (isSameY) yMult = 1;
+		var lineEndX = Math.floor(circleXUnit * nodeEndX + gridMargin + (xDist * xMult));
+		var lineEndY = Math.floor(circleXUnit * nodeEndY + gridMargin + (yDist * yMult));
 		console.log("drawing shortcut from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
 		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .2);
 	}
@@ -951,7 +963,6 @@
 	  		else{//Internet Explorer
 	  			alert("Please upgrade to the 21st century and get a different browser");
 	  		}
-	  		drawArrowLine(5,7, 5, 0, 4, "black");
 			//buildChordNode({{colNode.xInd}}, {{colNode.yInd}}, "{{colNode.chordName}}");
 			//{% for n in colNode.neighbors %}
 			//drawArrowBetweenNodes({{colNode.xInd}}, {{colNode.yInd}}, {{n.0.0}}, {{n.0.1}});
