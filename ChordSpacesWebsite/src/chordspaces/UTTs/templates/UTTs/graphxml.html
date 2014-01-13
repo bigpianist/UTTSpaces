@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Chords UTT1_mode="{{ mode_1 }}" UTT1_maj="{{ major_interval_1 }}" UTT1_min="{{ minor_interval_1 }}" UTT1_name="{{ name_1 }}" UTT2_mode="{{ mode_2 }}" UTT2_maj="{{ major_interval_2 }}" UTT2_min="{{ minor_interval_2 }}" UTT2_name="{{ name_2 }}" isValidGraph="{{ isValidGraph }}" xMax="{{ xMax }}" yMax="{{ yMax }}">
+<Chords UTT1_mode="{{ mode_1 }}" UTT1_maj="{{ major_interval_1 }}" UTT1_min="{{ minor_interval_1 }}" UTT1_name="{{ name_1 }}" UTT2_mode="{{ mode_2 }}" UTT2_maj="{{ major_interval_2 }}" UTT2_min="{{ minor_interval_2 }}" UTT2_name="{{ name_2 }}" isValidGraph="{{ isValidGraph }}" xMax="{{ xMax }}" yMax="{{ yMax }}" shortcut="{{ shortcut }}">
 {% for row in d_graph %}
 	{% for colNode in row %}
 		<ChordNode chordName="{{colNode.chordName}}" xIndex="{{colNode.xInd}}" yIndex="{{colNode.yInd}}">

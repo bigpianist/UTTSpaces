@@ -42,22 +42,36 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2,
     #        print nodeY.chordName
     return render(request, 'UTTs/graphxml.html', context)#UTT1 + ',' + UTT2
 
+def addShortcutFromUrl(dGraph, shortcut):
+    shortcutReplaced = shortcut.replace(".", "|")
+    shortcutStripped = shortcut.replace(".", "")
+    distanceDefault  = shortcut.count('|') + .9
+    addShortcut(dGraph, shortcutReplaced, distanceDefault, shortcutStripped)
+    return shortcutReplaced
+
 #Since both the front end and back end have access to the same graph, 
 #I just passed the indices of the nodes that I want to search
 #There is a problem with that, which is that sometimes the shortest path points to a closer node
-def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, x1, y1, x2, y2):
+def GraphPath(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2, x1, y1, x2, y2, shortcut = ""):
     [UTT1, UTT2] = createUTTStrings(mode_1, major_interval_1, minor_interval_1, name_1, mode_2, major_interval_2, minor_interval_2, name_2)
 
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
 
-   
+    print "shortcut is " + str(shortcut)
+    if (shortcut != None):
+        addShortcutFromUrl(dGraph, shortcut)
     #print "finding path from chord '" + dGraph[int(x1)][int(y1)].chordName + "' to '" + dGraph[int(x2)][int(y2)].chordName + "'"
     #print "finding path from chord '" + chordToString(dGraph[int(x1)][int(y1)].chord) + "' to '" + chordToString(dGraph[int(x2)][int(y2)].chord) + "'"
     shortPath = shortestPath(dGraph, chordCompare, dGraph[int(x1)][int(y1)], dGraph[int(x2)][int(y2)].chord)
     distTransTuple = getDistancesAndTransformationsFromPath(dGraph, shortPath)
     #print [chordToString(i.chord) + ':'  for i in shortPath]
-    context = {'shortestPath': shortPath, 'distance': distTransTuple[0], 'transformations': distTransTuple[1]}
+    #the transformations returned from getDistanceAndTransformationFromPath are comma-delimited
+    #let's make them bar delimited so we get consistency.
+    print 'before replacing commas: ' + distTransTuple[1]
+    barDelimTrans = distTransTuple[1].replace(",", "|")
+    print 'after replacing commas: ' + barDelimTrans
+    context = {'shortestPath': shortPath, 'distance': distTransTuple[0], 'transformations': barDelimTrans}
     #print nodeGraph2DToString(dGraph)
     #for nodeX in dGraph:
     #    for nodeY in nodeX:
@@ -69,14 +83,19 @@ def GraphWithShortcut(request, mode_1, major_interval_1, minor_interval_1, name_
     print "adding shortcut"
     startChord = chord.Chord([0,4,7])
     uttS,uttT,dGraph = createUTTSpaceFromStringsAndStartChord(UTT1, UTT2, startChord)
-    distanceDefault  = transString.count('|') + .9
-    transReplaced = transString.replace(".", "|")
-    print "inputting this into addShortcut: " + transReplaced
-    addShortcut(dGraph, transReplaced, distanceDefault, transReplaced)
+
+    shortcutReplaced = addShortcutFromUrl(dGraph, transString)
     yMax = len(dGraph[0]) - 1
     xMax = len(dGraph) - 1
     print "xMax is: " + str(xMax) +", yMax is: " + str(yMax)
-    context = {'d_graph': dGraph, 'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 'isValidGraph' : checkUTTSpace(dGraph), 'xMax': xMax, 'yMax': yMax}
+
+    context = {'d_graph': dGraph, 
+    'mode_1': mode_1, 'major_interval_1': major_interval_1, 'minor_interval_1': minor_interval_1, 'name_1': name_1, 
+    'mode_2': mode_2, 'major_interval_2': major_interval_2, 'minor_interval_2': minor_interval_2, 'name_2': name_2, 
+    'isValidGraph' : checkUTTSpace(dGraph), 
+    'xMax': xMax, 'yMax': yMax, 
+    'shortcut': shortcutReplaced}
+
     print nodeGraph2DToString(dGraph)
     return render(request, 'UTTs/graphxml.html', context)
 

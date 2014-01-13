@@ -232,7 +232,7 @@
       	canvasCtx.stroke();
 	}
 	//when the nodes are not neighbors, you gotta make a translucent arc arrow to show that it's a shortcut
-	function drawShortCutArrow(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
+	function drawShortCutArrow(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor, distance){
 		//short cut arrows will come off the sides of the circle
 		//first, get the x and y distances for the corners of the circle
 		var cornerDist = Math.sqrt((circleRadius * circleRadius) / 2);
@@ -272,7 +272,9 @@
 		console.log("nodeDistance is: " + String(nodeDistance));
 		console.log("identifier distance is : " + String(distance));
 		var nodesDoWrap = nodeDistance > distance;
-		if (nodesDoWrap) return;
+		if (nodesDoWrap) {
+			return;
+		}
 		var lineStartX = Math.floor(circleXUnit * nodeStartX + gridMargin + xDist);
 		var lineStartY = Math.floor(circleXUnit * nodeStartY + gridMargin + yDist);
 		xMult = -1;
@@ -514,6 +516,13 @@
 		url += new String(y1) + "/";
 		url += new String(x2) + "/";
 		url += new String(y2) + "/";
+
+		//if there was a shortcut on that graph, add it
+		var shortcut = parentChordsTag[0].getAttribute("shortcut");
+		if (shortcut !== ''){
+			console.log("found a shortcut in the xml: " + shortcut);
+			url += getShortcutForUrl(shortcut) + "/";
+		}
 		$.get( url, function( data ) {
 			parser=new DOMParser();
   			pathXml=parser.parseFromString(data,"text/xml");
@@ -717,6 +726,8 @@
 	function addPathToStack(pathEntry){
 		pathDistance = pathEntry[0];
 		pathTrans = pathEntry[1];
+		pathArray = pathTrans.split('|');
+		console.log("pathArray is: '" + pathTrans + "' and its splitlength is " + pathArray.length);
 		pathChordList = pathEntry[2];
 		var curChord = pathChordList[0], prevChord = 0;
 		//format of tuple is from the comments at top
@@ -734,9 +745,22 @@
 			prevChordName = prevChord[2];
 
 			console.log("drawing arrow from chord [" + prevChordX + ", " + prevChordY + ", " + prevChordName + "] to [" + curChordX + ", " + curChordY + ", " + curChordName + "]" );
-			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+			
+			//the pathArray is a list of all the movements in a path
+			//if shortcuts exist, there will be multiple transformations in the subpath at that index, undelimited
+			//so, if you remove the inversion strings ("-1"), you can count the resulting string to get the number of transformations for the current subpath
+			numTransformations =pathArray[crd - 1].replace(/-1/g,"").length;
+			console.log("number of transformations for this subpath: " + numTransformations);
+			//if (!nodesAreAdjacentWithWrap)
+			if (numTransformations > 1){
+				console.log("drawing shortcut as part of path");
+				drawShortCutArrow(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor, numTransformations);
+			}
+			else{
+				drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
+			}
 
-			if (Math.abs(prevChordY - curChordY) > 1 || Math.abs(prevChordX - curChordX) > 1){
+			if (numTransformations == 1 && (Math.abs(prevChordY - curChordY) > 1 || Math.abs(prevChordX - curChordX) > 1)){
 				//assumes no arrow heads
 				//this means that the nodes wrap
 				drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, chordPathWidth, chordPathColor);
@@ -748,6 +772,7 @@
 		printLastPath(pathTrans, pathDist);
 	}
 	function removePathFromStack(index){
+		if (index < 0 || index > paths.length -1) return;
 		var curPath = paths[index][2];
 		var curTuple = curPath[0];
 		var clearLineWidth = 10;
@@ -786,6 +811,11 @@
 			return false;
 		}
 	}
+	//this function converts the normal path version of the shortcut syntax into a url-friendly version
+	//What this really means is that it replaces the '|'s with '.'s
+	function getShortcutForUrl(shortcut){
+		return shortcut.replace(/\|/g, ".");
+	}
 	function addShortcut(){
 		url = ""
 		var parentChordsTag = xmlDoc.getElementsByTagName("Chords");
@@ -802,7 +832,8 @@
 
 		if (lastTrans !== 'undefined') {
 			console.log("lastTrans is true, adding it to url")
-			url += lastTrans.replace(/\|/g, ".") + "/";
+			getShortcutForUrl
+			url += getShortcutForUrl(lastTrans) + "/";
 		}
 		$.get( url, function( data ) {
 			console.log("got the data back /addShortcut")
