@@ -45,7 +45,7 @@ def Graph2D(request, mode_1, major_interval_1, minor_interval_1, name_1, mode_2,
 def addShortcutFromUrl(dGraph, shortcut):
     shortcutReplaced = shortcut.replace(".", "|")
     shortcutStripped = shortcut.replace(".", "")
-    distanceDefault  = shortcut.count('|') + .9
+    distanceDefault  = shortcut.count('.') + .9
     addShortcut(dGraph, shortcutReplaced, distanceDefault, shortcutStripped)
     return shortcutReplaced
 

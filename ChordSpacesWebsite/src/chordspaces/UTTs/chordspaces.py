@@ -282,7 +282,7 @@ def addShortcut(graph, pathString, distanceVal, identifier = 'X', stripInverse =
 				for neigh in graph[shortCutX][shortCutY].neighbors:
 					#print 'comparing neighbor ' + str(neigh[2]) + ' with id ' + str(identifiers[transIndex])
 					if neigh[2] == identifiers[transIndex]:
-						print 'found neighbor with id ' + str(identifiers[transIndex]) + ', chord: ' + chordToString(graph[neigh[0][0]][neigh[0][1]].chord)
+						#print 'found neighbor with id ' + str(identifiers[transIndex]) + ', chord: ' + chordToString(graph[neigh[0][0]][neigh[0][1]].chord)
 						shortCutX = neigh[0][0]
 						shortCutY = neigh[0][1]
 						break

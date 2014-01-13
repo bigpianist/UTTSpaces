@@ -90,7 +90,9 @@
 	<div id="UTT2Disp"/>
 	</tr>
 	<input type="button" onclick="buildGraph()" value="Get Chord Graph"><br/>
-	<input id="addShortcutButton" type="button" onClick="addShortcut()"/><div id="lastTransformation"/> <br/>
+	<input id="addShortcutButton" type="button" onClick="addShortcut()"/> <br/>
+	<div id="lastTransformation"/> <br/>
+	<div id="lastDistance"/> <br/>
 	<div id="validDisp"/>
 </table>
 </body>
@@ -114,8 +116,12 @@
 	var defaultArrowWidth = 4;
 	var defaultArrowColor = "black";
 	var defaultFillColor = "white";
+
 	var chordPathWidth = 5;
 	var chordPathColor	= "green";
+
+	var defaultShortcutOpacity = .2;
+	var shortcutOnPathOpacity = .5;
 
 	var selectedLineWidth = 4;
 	var selectedLineColor = "blue";
@@ -232,7 +238,7 @@
       	canvasCtx.stroke();
 	}
 	//when the nodes are not neighbors, you gotta make a translucent arc arrow to show that it's a shortcut
-	function drawShortCutArrow(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor, distance){
+	function drawShortCutArrow(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor, opacity, distance){
 		//short cut arrows will come off the sides of the circle
 		//first, get the x and y distances for the corners of the circle
 		var cornerDist = Math.sqrt((circleRadius * circleRadius) / 2);
@@ -284,7 +290,7 @@
 		var lineEndX = Math.floor(circleXUnit * nodeEndX + gridMargin + (xDist * xMult));
 		var lineEndY = Math.floor(circleXUnit * nodeEndY + gridMargin + (yDist * yMult));
 		console.log("drawing shortcut from indices: (" + nodeStartX + "," + nodeStartY + ")" + "(" + nodeEndX + "," + nodeEndY + "), and lineLocs: (" + lineStartX + "," + lineStartY + "),(" + lineEndX + "," + lineEndY + ")");
-		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, .2);
+		drawArrowLine(lineStartX, lineStartY, lineEndX, lineEndY, lineWidth, lineColor, opacity);
 	}
 	function drawArrowBetweenNodes(nodeStartX, nodeStartY, nodeEndX, nodeEndY, lineWidth, lineColor){
 		var circleRadiusX = circleRadius;
@@ -429,7 +435,7 @@
 						//if the actual distance is larger than the distance from the identifier, then that's a wrap!
 						distance = identifier.replace(/-1|\|/g,"").length;
 						console.log("identifier is '"  + identifier +"' and distance is " + String(distance));
-						drawShortCutArrow(curNodeX, curNodeY, neighborX, neighborY, defaultArrowWidth, defaultArrowColor, distance);
+						drawShortCutArrow(curNodeX, curNodeY, neighborX, neighborY, defaultArrowWidth, defaultArrowColor, defaultShortcutOpacity, distance);
 					}
 					//console.log("found neighbor at: (" + neighborNodes[k].getAttribute("xIndex") + "," + neighborNodes[k].getAttribute("yIndex") + ")");
 				}				
@@ -682,11 +688,14 @@
 	}
 	function printLastPath(){
 		console.log("printing last path: " + paths[paths.length - 1][1]);
+		console.log("printing last distance: " + paths[paths.length - 1][0]);
 		if (paths.length > 0){
 			$('#lastTransformation').text(paths[paths.length - 1][1]);
+			$('#lastDistance').text(paths[paths.length - 1][0] + "poop");
 		}
 		else{
 			$('#lastTransformation').text("");
+			$('#lastDistance').text("");
 		}
 
 	}
@@ -723,6 +732,10 @@
 		}
 
 	}
+	function getNumTransformations(transformationPath){
+		numTransformations = transformationPath.replace(/-1/g,"").length;
+		return numTransformations;
+	}
 	function addPathToStack(pathEntry){
 		pathDistance = pathEntry[0];
 		pathTrans = pathEntry[1];
@@ -749,18 +762,17 @@
 			//the pathArray is a list of all the movements in a path
 			//if shortcuts exist, there will be multiple transformations in the subpath at that index, undelimited
 			//so, if you remove the inversion strings ("-1"), you can count the resulting string to get the number of transformations for the current subpath
-			numTransformations =pathArray[crd - 1].replace(/-1/g,"").length;
+			numTransformations = getNumTransformations(pathArray[crd - 1]);
 			console.log("number of transformations for this subpath: " + numTransformations);
 			//if (!nodesAreAdjacentWithWrap)
 			if (numTransformations > 1){
 				console.log("drawing shortcut as part of path");
-				drawShortCutArrow(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor, numTransformations);
+				drawShortCutArrow(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor, shortcutOnPathOpacity, numTransformations);
+				continue;
 			}
-			else{
-				drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
-			}
+			drawArrowBetweenNodes(prevChordX, prevChordY, curChordX, curChordY, chordPathWidth, chordPathColor);
 
-			if (numTransformations == 1 && (Math.abs(prevChordY - curChordY) > 1 || Math.abs(prevChordX - curChordX) > 1)){
+			if (Math.abs(prevChordY - curChordY) > 1 || Math.abs(prevChordX - curChordX) > 1){
 				//assumes no arrow heads
 				//this means that the nodes wrap
 				drawArrowBetweenNodes(curChordX, curChordY, prevChordX, prevChordY, chordPathWidth, chordPathColor);
@@ -773,6 +785,9 @@
 	}
 	function removePathFromStack(index){
 		if (index < 0 || index > paths.length -1) return;
+
+		pathTrans = paths[index][1];
+		pathArray = pathTrans.split('|');
 		var curPath = paths[index][2];
 		var curTuple = curPath[0];
 		var clearLineWidth = 10;
@@ -788,6 +803,19 @@
 			prevChordX = prevTuple[0];
 			prevChordY = prevTuple[1];
 			prevChordName = prevTuple[2];
+
+			numTransformations = getNumTransformations(pathArray[t - 1]);
+			if (numTransformations > 1){
+				//clear both directions of the arrow
+				//TODO: gonna have to redraw whatever is under this damn shortcut, since it can go over nodes
+				//At least we know the transformations and can redraw those nodes
+				drawShortCutArrow(curChordX, curChordY, prevChordX, prevChordY, clearLineWidth, defaultBackgroundColor, 1, numTransformations);
+				drawShortCutArrow(prevChordX, prevChordY, curChordX, curChordY, clearLineWidth, defaultBackgroundColor, 1, numTransformations);
+				//draw anew the default lines
+				drawShortCutArrow(curChordX, curChordY, prevChordX, prevChordY, defaultArrowWidth, defaultArrowColor, defaultShortcutOpacity, numTransformations);
+				drawShortCutArrow(prevChordX, prevChordY, curChordX, curChordY, defaultArrowWidth, defaultArrowColor, defaultShortcutOpacity, numTransformations);
+				continue;
+			}
 			//to clear a line, simply draw a line of the background color of sufficient width
 			//we do both directions because this function automatically handles the wrapping case,
 			//in which case the two directional arrows are in different locations
