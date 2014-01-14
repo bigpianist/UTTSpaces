@@ -279,8 +279,10 @@
 		console.log("identifier distance is : " + String(distance));
 		var nodesDoWrap = nodeDistance > distance;
 		if (nodesDoWrap) {
+			//TODO draw wrapping shortcuts
 			return;
 		}
+		//TODO: test for isSame and create arcs instead of lines
 		var lineStartX = Math.floor(circleXUnit * nodeStartX + gridMargin + xDist);
 		var lineStartY = Math.floor(circleXUnit * nodeStartY + gridMargin + yDist);
 		xMult = -1;
