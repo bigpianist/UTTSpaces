@@ -1,0 +1,1097 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"default",
+				"defaultShortcutOpacity"
+			],
+			[
+				"defa",
+				"defaultShortcutOnPathOpacity"
+			],
+			[
+				"drawS",
+				"drawShortCutArrow"
+			],
+			[
+				"shortcu",
+				"shortcutReplaced"
+			],
+			[
+				"isSamex",
+				"isSameX"
+			],
+			[
+				"identifi",
+				"identifierString"
+			],
+			[
+				"nei",
+				"neighborY"
+			],
+			[
+				"neig",
+				"neighborX"
+			],
+			[
+				"curNo",
+				"curNodeY"
+			],
+			[
+				"curno",
+				"curNodeX"
+			],
+			[
+				"neigh",
+				"neighborY"
+			],
+			[
+				"curNode",
+				"curNodeY"
+			],
+			[
+				"curNod",
+				"curNodeX"
+			],
+			[
+				"drawsh",
+				"drawShortCutArrow"
+			],
+			[
+				"trans",
+				"transString"
+			],
+			[
+				"pathTrans",
+				"pathTransString"
+			],
+			[
+				"getEle",
+				"getElementById"
+			],
+			[
+				"defaul",
+				"defaultArrowColor"
+			],
+			[
+				"line",
+				"lineWidth"
+			],
+			[
+				"lineEnD",
+				"lineEndY"
+			],
+			[
+				"canvas",
+				"canvasCtx"
+			],
+			[
+				"curChord",
+				"curChordName"
+			],
+			[
+				"isSele",
+				"isSelectedByNameReverse"
+			],
+			[
+				"curCho",
+				"curChordY"
+			],
+			[
+				"curC",
+				"curChordX"
+			],
+			[
+				"selecte",
+				"selectedIndex"
+			],
+			[
+				"nodI",
+				"nodeIndexY"
+			],
+			[
+				"nodei",
+				"nodeIndexX"
+			],
+			[
+				"curNodeI",
+				"curNodeIndexX"
+			],
+			[
+				"highlightedLin",
+				"highlightedLineWidth"
+			],
+			[
+				"previou",
+				"previousNodeY"
+			],
+			[
+				"pit2",
+				"pitch2_1"
+			],
+			[
+				"pit",
+				"pitch1_2"
+			],
+			[
+				"drawAr",
+				"drawArrowBetweenNodes"
+			],
+			[
+				"def",
+				"defaultFillColor"
+			],
+			[
+				"selected",
+				"selectedFillColor"
+			],
+			[
+				"defaultCircle",
+				"defaultCircleLineColor"
+			],
+			[
+				"se",
+				"selectedCircleLineWidth"
+			],
+			[
+				"getNod",
+				"getNodeNameByIndex"
+			],
+			[
+				"highligh",
+				"highlightedNumber"
+			],
+			[
+				"remov",
+				"removeSelectedChord"
+			],
+			[
+				"curn",
+				"curNodeY"
+			],
+			[
+				"high",
+				"highlightedY2"
+			],
+			[
+				"highli",
+				"highlightedX1"
+			],
+			[
+				"pi",
+				"pitch1_3"
+			],
+			[
+				"highl",
+				"highlightedX1"
+			],
+			[
+				"curN",
+				"curNodeY"
+			],
+			[
+				"hig",
+				"highlightedY2"
+			],
+			[
+				"highlighted",
+				"highlightedX1"
+			],
+			[
+				"neighbo",
+				"neighborNodes"
+			],
+			[
+				"circle",
+				"circleXUnit"
+			],
+			[
+				"circler",
+				"circleRadiusX"
+			],
+			[
+				"nodeSta",
+				"nodeStartY"
+			],
+			[
+				"lineend",
+				"lineEndY"
+			],
+			[
+				"linee",
+				"lineEndX"
+			],
+			[
+				"lineSt",
+				"lineStartY"
+			],
+			[
+				"lineS",
+				"lineStartX"
+			],
+			[
+				"canv",
+				"canvasCtx"
+			],
+			[
+				"UTT",
+				"UTT2"
+			],
+			[
+				"mode",
+				"mode_1"
+			],
+			[
+				"compute",
+				"computeDistanceForAllK11UTTs"
+			],
+			[
+				"mindi",
+				"minDices"
+			],
+			[
+				"uttst",
+				"uttString"
+			],
+			[
+				"uttStr",
+				"uttStrings"
+			],
+			[
+				"uttstr",
+				"uttString2"
+			],
+			[
+				"tota",
+				"totalPhraseDist"
+			],
+			[
+				"song",
+				"songDistances"
+			],
+			[
+				"tot",
+				"totalPhraseDist"
+			],
+			[
+				"chordOb",
+				"chordObjList"
+			],
+			[
+				"chordO",
+				"chordObjList"
+			],
+			[
+				"pitchCl",
+				"pitchClasses"
+			],
+			[
+				"piano",
+				"pianoScore"
+			],
+			[
+				"quarter",
+				"quarterLength"
+			],
+			[
+				"create",
+				"createVerticalizedPianoScore"
+			],
+			[
+				"oct",
+				"octChord"
+			],
+			[
+				"chord",
+				"chordIntervalList"
+			],
+			[
+				"me",
+				"measureNum"
+			],
+			[
+				"scale",
+				"scaleIndex"
+			],
+			[
+				"scal",
+				"scaleOccurrences"
+			],
+			[
+				"find",
+				"findScaleInSong"
+			],
+			[
+				"real",
+				"realPitchList"
+			],
+			[
+				"coltran",
+				"coltraneSong"
+			],
+			[
+				"colt",
+				"coltranePaths"
+			],
+			[
+				"intro",
+				"intro"
+			],
+			[
+				"cellha",
+				"cellHasBeenClickedLocal"
+			],
+			[
+				"ou",
+				"out"
+			],
+			[
+				"myb",
+				"myBand"
+			],
+			[
+				"myban",
+				"myBandInstrumentId"
+			],
+			[
+				"instrumentColo",
+				"instrument_colors"
+			],
+			[
+				"myBand",
+				"myBandInstrumentId"
+			],
+			[
+				"instrum",
+				"instrumentId"
+			],
+			[
+				"myBan",
+				"myBandInstrumentId"
+			],
+			[
+				"my",
+				"myInstrumentId"
+			],
+			[
+				"Step",
+				"STEP_HEIGHT_PIXELS"
+			],
+			[
+				"instru",
+				"instrumentId"
+			],
+			[
+				"google",
+				"googleState"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "chordspaces/settings.py",
+			"settings":
+			{
+				"buffer_size": 5446,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/views.py",
+			"settings":
+			{
+				"buffer_size": 6350,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/templates/UTTs/index.html",
+			"settings":
+			{
+				"buffer_size": 40567,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/templates/UTTs/graphxml.html",
+			"settings":
+			{
+				"buffer_size": 869,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/templates/UTTs/path.html",
+			"settings":
+			{
+				"buffer_size": 579,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/templates/UTTs/graphxml_beforeModularization.html",
+			"settings":
+			{
+				"buffer_size": 4541,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/templates/UTTs/chordGraph.js",
+			"settings":
+			{
+				"buffer_size": 2541,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/urls.py",
+			"settings":
+			{
+				"buffer_size": 1340,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/chordspaces.py",
+			"settings":
+			{
+				"buffer_size": 23460,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/DijkstraShortestPath.py",
+			"settings":
+			{
+				"buffer_size": 5125,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "UTTs/Node2D.py",
+			"settings":
+			{
+				"buffer_size": 1586,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"",
+				"Snippet: Lorem ipsum"
+			]
+		],
+		"width": 392.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/Ryan/src/UTTSpaces/ChordSpacesWebsite/src/chordspaces/UTTs/templates/UTTs/index.html",
+		"/Users/Ryan/src/UTTSpaces/ChordSpacesWebsite/src/chordspaces/UTTs/templates/UTTs/path.xml",
+		"/Users/Ryan/src/UTTSpaces/ChordSpacesWebsite/src/chordspaces/UTTs/templates/UTTs/indexOld.html",
+		"/Users/Ryan/src/UTTSpaces/ChordSpacesWebsite/src/chordspaces/chordspaces/views.py",
+		"/Users/Ryan/src/ChordSpacesWebsite/src/chordspaces/templates/UTTs/index.html",
+		"/Users/Ryan/src/ChordSpacesWebsite/src/chordspaces/chordspaces/views.py",
+		"/Users/Ryan/src/ChordSpacesWebsite/home/src/UTTs/polls/templates/polls/details.html",
+		"/Users/Ryan/Documents/SchoolDocs/Semester2/MUMT609/IndependentProjNotes",
+		"/Users/Ryan/Dropbox/MUTH656Pres/FinalProj/son2Edited.txt",
+		"/Users/Ryan/Dropbox/MUTH656Pres/FinalProj/song1.txt",
+		"/Users/Ryan/Downloads/reference_segmentations/01_-_I_Saw_Her_Standing_There.lab",
+		"/Users/Ryan/src/BillboardProject/SongSectionHMM/durationMatrixProbabilities.txt",
+		"/Users/Ryan/Dropbox/MUTH656Pres/ScaleLocations.txt",
+		"/Users/Ryan/Dropbox/MUTH656Pres/AllOctScales.txt",
+		"/Users/Ryan/Downloads/music21-1.0.0/music21/key.py",
+		"/Users/Ryan/Documents/SchoolDocs/Semester2/MUMT621/HW4_Music21/ComposerDemo.py",
+		"/Users/Ryan/Dropbox/MyFolio/courses/MUMT621/MusicInformationRetrieval.html",
+		"/Users/Ryan/src/BillboardProject/section_groupings.yml",
+		"/Users/Ryan/Documents/SchoolDocs/Semester2/MUMT609/Parsers/chord_symbols.yml",
+		"/Users/Ryan/Documents/SchoolDocs/Semester2/MUMT609/0881/salami_chords.txt",
+		"/Users/Ryan/Documents/SchoolDocs/Semester1/MachineLearning/FinalProj/readme.txt",
+		"/Users/Ryan/src/portaudio/include/pa_mac_core.h",
+		"/Users/Ryan/src/Sequencer+/static/app.js",
+		"/Users/Ryan/Downloads/__init__.py",
+		"/Users/Ryan/src/musitk_hack/static/theworld.js",
+		"/Users/Ryan/Downloads/results.xml",
+		"/Users/Ryan/Downloads/anton-2.0.0/programBuilder.pl",
+		"/Users/Ryan/src/musitk_hack/static/temporaryHatkHack.html",
+		"/Users/Ryan/src/hackathonNYC/RightHand.py",
+		"/Users/Ryan/src/musitk_hack/static/Harmony.py",
+		"/Users/Ryan/src/musitk_hack/static/theslidersofbrian.js"
+	],
+	"find":
+	{
+		"height": 37.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			"<open files>"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"drawsh",
+			"todo",
+			"drawshortc",
+			"addShortcutFromUrl",
+			"addpath",
+			"lastTransformation",
+			"ransformations > 1",
+			"addp",
+			"shortcutOnPathOpacity",
+			"drawShortCutArrow",
+			"drawArrowLine",
+			"opacity",
+			"drawShortCutArrow",
+			"distance",
+			"drawShortCutArrow",
+			"addPathToStack",
+			"replace",
+			"getDistancesAndTransformationsFromPath",
+			"\",\"",
+			"drawShortCutArrow",
+			"replace",
+			"split",
+			"addp",
+			"addShortcutFromUrl",
+			"pathTrans",
+			"addPathToStack",
+			"getch",
+			"addp",
+			"drawShortCutsOnly",
+			"addpat",
+			"removePathFromStack",
+			"undefined",
+			"addshortcu",
+			"makeNeighbors",
+			"allPossibleTransformationsFromTriad",
+			"computeSpaceAndDistance",
+			"make2DNodeGraph",
+			"false",
+			"computeSpaceAndDistance",
+			"allPossibleTransformationsFromTriad",
+			"computeSpaceAndDistance",
+			"make2DNodeGraph",
+			"nodeGraph2DToString",
+			"print",
+			"printd",
+			"replace(",
+			"/g",
+			"drawShortCutArrow",
+			"count",
+			"drawShortCutArrow",
+			"drawsho",
+			"defaultArrowColor",
+			"drawShortCutArrow",
+			".01",
+			"drawsh",
+			"rNodes.le",
+			"drawsh",
+			"string(",
+			"drawing sho",
+			"addShortCut",
+			"shortcuts",
+			"addsh",
+			"xmax",
+			"drawShortCutArrow",
+			"shortcuts",
+			"shorctus",
+			"x",
+			"drawshortcuts",
+			"nodeGraph2DToString",
+			"drawshort",
+			"wraps",
+			"drawsh",
+			"addShortCut",
+			"addShor",
+			"drawshor",
+			"drawShortCutArrow",
+			"drawsh",
+			"drawShortCutArrow",
+			"drawsho",
+			"lastTransformation",
+			"getLastTransformation",
+			"addsho",
+			"addShortCut",
+			"addshort",
+			"addShortCut",
+			"addSho",
+			"drawS",
+			"shortcut",
+			"curGraph =",
+			"addshortcu",
+			"addsho",
+			"get",
+			"addshor",
+			"addsho",
+			"makeNeighbors",
+			"stripInverse",
+			"shortcu",
+			"addShortcut",
+			"\"/><",
+			");\n",
+			"printLastPath",
+			"printLas",
+			"pathTrans",
+			"pathTransformationString",
+			"pathTransString",
+			"removep",
+			"remove",
+			"addP",
+			"paths",
+			"]);",
+			"addPathToStack",
+			"getDistancesAndTransformationsFromPath",
+			"print getDistancesAndTransformationsFromPath(nGraph, searchPath)",
+			"addPat",
+			"lastTransformation",
+			"drawShortCutArrow",
+			"green",
+			"chordPathColor",
+			"defaultArrowColor",
+			"drawShortCutArrow",
+			".1",
+			"lineColor",
+			"drawArrowLine",
+			"getr",
+			"drawArrowLine",
+			"drawshor",
+			"drawarr",
+			".5"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"z",
+			"pathTrans",
+			"UTT2_min",
+			"UTT2_maj",
+			"UTT1_min",
+			"UTT1_maj",
+			"UTT2_mode",
+			"UTT1_mode",
+			"selectedLineWidth",
+			"defaultLineColor",
+			"defaultLineWidth",
+			"lineWidth",
+			"lineColor",
+			"gridMargin",
+			"Node2DGraph",
+			"m",
+			"",
+			"occur",
+			":",
+			"\n:",
+			"\n",
+			"\n\n",
+			"\\n",
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "chordspaces/settings.py",
+					"settings":
+					{
+						"buffer_size": 5446,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "UTTs/views.py",
+					"settings":
+					{
+						"buffer_size": 6350,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2047,
+								2048
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 682.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "UTTs/templates/UTTs/index.html",
+					"settings":
+					{
+						"buffer_size": 40567,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9788,
+								9788
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 5576.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "UTTs/templates/UTTs/graphxml.html",
+					"settings":
+					{
+						"buffer_size": 869,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								377,
+								377
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "UTTs/templates/UTTs/path.html",
+					"settings":
+					{
+						"buffer_size": 579,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								71,
+								86
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "UTTs/templates/UTTs/graphxml_beforeModularization.html",
+					"settings":
+					{
+						"buffer_size": 4541,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4206,
+								4418
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "UTTs/templates/UTTs/chordGraph.js",
+					"settings":
+					{
+						"buffer_size": 2541,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								2541
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 8.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "UTTs/urls.py",
+					"settings":
+					{
+						"buffer_size": 1340,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								792,
+								792
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 1970.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "UTTs/chordspaces.py",
+					"settings":
+					{
+						"buffer_size": 23460,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10127,
+								10127
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 5614.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "UTTs/DijkstraShortestPath.py",
+					"settings":
+					{
+						"buffer_size": 5125,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4499,
+								4511
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "UTTs/Node2D.py",
+					"settings":
+					{
+						"buffer_size": 1586,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								561,
+								565
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 497.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 124.0
+	},
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}
